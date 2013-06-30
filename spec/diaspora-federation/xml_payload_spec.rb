@@ -1,11 +1,7 @@
 require 'spec_helper'
 
-class TestEntity < Entity
-  set_allowed_props :test
-end
-
 describe XmlPayload do
-  let(:entity) { TestEntity.new(test: 'asdf') }
+  let(:entity) { Entities::TestEntity.new(test: 'asdf') }
   let(:payload) { XmlPayload.pack(entity) }
 
   let(:xml_str) { <<XML
@@ -89,7 +85,8 @@ XML
       its(:to_h) { should eql(entity.to_h) }
 
       it 'returns an entity instance of the original class' do
-        subject.should be_an_instance_of TestEntity
+        subject.should be_an_instance_of Entities::TestEntity
+        subject.test.should eql('asdf')
       end
     end
   end

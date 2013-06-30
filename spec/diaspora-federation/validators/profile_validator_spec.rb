@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe ProfileValidator do
+describe Validators::ProfileValidator do
   def profile_stub(data={})
     OpenStruct.new({diaspora_handle: 'testing@testpod.com',
                 first_name: 'my_name',
@@ -16,19 +16,19 @@ describe ProfileValidator do
   end
 
   it 'validates a well-formed instance' do
-    v = ProfileValidator.new(profile_stub)
+    v = Validators::ProfileValidator.new(profile_stub)
     v.should be_valid
   end
 
   context '#diaspora_handle' do
     it 'must not be empty' do
-      v = ProfileValidator.new(profile_stub(diaspora_handle: ''))
+      v = Validators::ProfileValidator.new(profile_stub(diaspora_handle: ''))
       v.should_not be_valid
       v.errors.should include(:diaspora_handle)
     end
 
     it 'must resemble an email address' do
-      v = ProfileValidator.new(profile_stub(diaspora_handle: 'i am a weird handle @@@ ### 12345'))
+      v = Validators::ProfileValidator.new(profile_stub(diaspora_handle: 'i am a weird handle @@@ ### 12345'))
       v.should_not be_valid
       v.errors.should include(:diaspora_handle)
     end
@@ -38,14 +38,14 @@ describe ProfileValidator do
     [:first_name, :last_name].each do |prop|
       it 'must not exceed 32 chars' do
         @profile.public_send("#{prop}=", 'abcdefghijklmnopqrstuvwxyz_aaaaaaaaaa')
-        v = ProfileValidator.new(@profile)
+        v = Validators::ProfileValidator.new(@profile)
         v.should_not be_valid
         v.errors.should include(prop)
       end
 
       it 'must not contain semicolons' do
         @profile.public_send("#{prop}=", 'asdf;qwer;yxcv')
-        v = ProfileValidator.new(@profile)
+        v = Validators::ProfileValidator.new(@profile)
         v.should_not be_valid
         v.errors.should include(prop)
       end
@@ -54,7 +54,7 @@ describe ProfileValidator do
 
   context '#tag_string' do
     it 'must not contain more than 5 tags' do
-      v = ProfileValidator.new(profile_stub(tag_string: '#i #have #too #many #tags #in #my #profile'))
+      v = Validators::ProfileValidator.new(profile_stub(tag_string: '#i #have #too #many #tags #in #my #profile'))
       v.should_not be_valid
       v.errors.should include(:tag_string)
     end
@@ -63,7 +63,7 @@ describe ProfileValidator do
   context '#birthday' do
     it 'may be empty or nil' do
       [nil, ''].each do |val|
-        v = ProfileValidator.new(profile_stub(birthday: val))
+        v = Validators::ProfileValidator.new(profile_stub(birthday: val))
         v.should be_valid
         v.errors.should be_empty
       end
@@ -71,7 +71,7 @@ describe ProfileValidator do
 
     it 'may be a Date or date string' do
       [Date.parse('2013-06-29'), '2013-06-29'].each do |val|
-        v = ProfileValidator.new(profile_stub(birthday: val))
+        v = Validators::ProfileValidator.new(profile_stub(birthday: val))
         v.should be_valid
         v.errors.should be_empty
       end
@@ -79,7 +79,7 @@ describe ProfileValidator do
 
     it 'must not be an arbitrary string or other object' do
       ['asdf asdf', true, 1234].each do |val|
-        v = ProfileValidator.new(profile_stub(birthday: val))
+        v = Validators::ProfileValidator.new(profile_stub(birthday: val))
         v.should_not be_valid
         v.errors.should include(:birthday)
       end
@@ -92,7 +92,7 @@ describe ProfileValidator do
         [true, 'true', false, 'false'].each do |val|
           @profile.public_send("#{prop}=", val)
 
-          v = ProfileValidator.new(@profile)
+          v = Validators::ProfileValidator.new(@profile)
           v.should be_valid
           v.errors.should be_empty
         end
@@ -102,7 +102,7 @@ describe ProfileValidator do
         ['asdf', Date.today, 1234].each do |val|
           @profile.public_send("#{prop}=", val)
 
-          v = ProfileValidator.new(@profile)
+          v = Validators::ProfileValidator.new(@profile)
           v.should_not be_valid
           v.errors.should include(prop)
         end

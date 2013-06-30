@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Profile do
+describe Entities::Profile do
   let(:data) { {diaspora_handle: 'test@test.test',
                 first_name: 'name',
                 last_name: '',
@@ -36,11 +36,11 @@ XML
   }
 
   it 'should be an Entity' do
-    Profile.should be < Entity
+    Entities::Profile.should be < Entity
   end
 
   it 'has its properties set' do
-    Profile.class_props.should include(:diaspora_handle,
+    Entities::Profile.class_props.should include(:diaspora_handle,
                                        :first_name,
                                        :last_name,
                                        :image_url,
@@ -56,7 +56,7 @@ XML
   end
 
   context 'behaviour' do
-    subject { Profile.new(data) }
+    subject { Entities::Profile.new(data) }
 
     its(:to_h) { should == data }
 
