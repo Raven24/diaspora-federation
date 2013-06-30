@@ -14,6 +14,10 @@ class Entity
 
   include Entity::ClassMethods
 
+  # initializes the entity with the given attribute hash and freezes the instance
+  # (extra attributes that were not defined in the class definition get discarded)
+  # @param [Hash]
+  # @return [Entitiy]
   def initialize(args)
     raise ArgumentError.new("expected a Hash") unless args.is_a?(Hash)
     args.each do |k,v|
@@ -22,6 +26,8 @@ class Entity
     freeze
   end
 
+  # returns a hash representing this entity (attributes => values)
+  # @return [Hash]
   def to_h
     out = {}
     self.class.class_props.map do |prop|
@@ -30,11 +36,14 @@ class Entity
     out
   end
 
+  # returns the xml representation for this entity constructed out of
+  # Ox::Elements
+  # @return [Ox::Element]
   def to_xml
     entity_xml
   end
 
-  protected
+  private
 
   def entity_xml
     root_element = Ox::Element.new(entity_name)

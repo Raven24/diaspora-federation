@@ -55,13 +55,13 @@ XML
                                        :tag_string)
   end
 
-  it 'can set the property values on initialization' do
-    p = Profile.new(data)
-    p.to_h.should == data
-  end
+  context 'behaviour' do
+    subject { Profile.new(data) }
 
-  it 'produces correct XML' do
-    p = Profile.new(data)
-    Ox.dump(p.to_xml).should eql xml
+    its(:to_h) { should == data }
+
+    it 'produces correct XML' do
+      Ox.dump(subject.to_xml).should eql(xml)
+    end
   end
 end
