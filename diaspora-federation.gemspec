@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- spec/*`.split("\n")
 
-  s.add_dependency 'valid', '0.3.0'
+  s.add_dependency 'valid', '0.3.1'
   s.add_dependency 'ox', '2.0.4'
 
   s.add_development_dependency 'rake', '10.1.0'

@@ -15,7 +15,7 @@ describe Profile do
                 nsfw: false,
                 tag_string: '#i #love #tags'} }
 
-  let(:xml) { <<XML
+  let(:xml) { <<-XML
 
 <profile>
   <diaspora_handle>test@test.test</diaspora_handle>
@@ -24,7 +24,7 @@ describe Profile do
   <image_url>/some/image.jpg</image_url>
   <image_url_medium/>
   <image_url_small/>
-  <birthday>2013-06-29</birthday>
+  <birthday>#{Date.today.to_s}</birthday>
   <gender>something</gender>
   <bio>i am interesting</bio>
   <location>Earth</location>
