@@ -5,6 +5,21 @@ describe Salmon::MagicEnvelope do
   let(:pkey) { OpenSSL::PKey::RSA.generate(512) } # use small key for speedy specs
   let(:envelope) { Salmon::MagicEnvelope.new(pkey, payload).envelop }
 
+  def sig_subj(env)
+    data = Base64.urlsafe_decode64(env.locate('me:data').first.text)
+    type = env.locate('me:data').first['type']
+    enc = env.locate('me:encoding').first.text
+    alg = env.locate('me:alg').first.text
+
+    subj = [data, type, enc, alg].map { |i| Base64.urlsafe_encode64(i) }.join('.')
+  end
+
+  def re_sign(env, key)
+    new_sig = Base64.urlsafe_encode64(
+              key.sign(OpenSSL::Digest::SHA256.new, sig_subj(env)))
+    env.locate('me:sig').first.text.replace(new_sig)
+  end
+
   context 'sanity' do
     it 'constructs an instance' do
       expect { Salmon::MagicEnvelope.new(pkey, payload) }.not_to raise_error
@@ -40,12 +55,7 @@ describe Salmon::MagicEnvelope do
     it 'signs the payload correctly' do
       env = subject.envelop
 
-      data = Base64.urlsafe_decode64(env.locate('me:data').first.text)
-      type = env.locate('me:data').first['type']
-      enc = env.locate('me:encoding').first.text
-      alg = env.locate('me:alg').first.text
-
-      subj = [data, type, enc, alg].map { |i| Base64.urlsafe_encode64(i) }.join('.')
+      subj = sig_subj(env)
       sig = Base64.urlsafe_decode64(env.locate('me:sig').first.text)
 
       pkey.public_key.verify(OpenSSL::Digest::SHA256.new, sig, subj).should be_true
@@ -79,6 +89,28 @@ describe Salmon::MagicEnvelope do
         expect {
           Salmon::MagicEnvelope.unenvelop(envelope, other_key.public_key)
         }.to raise_error Salmon::MagicEnvelope::InvalidSignature
+      end
+
+      it 'verifies the encoding' do
+        bad_env = Salmon::MagicEnvelope.new(pkey, payload).envelop
+        elem = bad_env.locate('me:encoding').first
+        elem.nodes.clear
+        elem << 'invalid_enc'
+        re_sign(bad_env, pkey)
+        expect {
+          e = Salmon::MagicEnvelope.unenvelop(bad_env, pkey.public_key)
+        }.to raise_error Salmon::MagicEnvelope::InvalidEncoding
+      end
+
+      it 'verifies the algorithm' do
+        bad_env = Salmon::MagicEnvelope.new(pkey, payload).envelop
+        elem = bad_env.locate('me:alg').first
+        elem.nodes.clear
+        elem << 'invalid_alg'
+        re_sign(bad_env, pkey)
+        expect {
+          e = Salmon::MagicEnvelope.unenvelop(bad_env, pkey.public_key)
+        }.to raise_error Salmon::MagicEnvelope::InvalidAlgorithm
       end
     end
 

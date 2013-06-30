@@ -71,6 +71,12 @@ module DiasporaFederation; module Salmon
       raise InvalidEnvelope unless envelope_valid?(magic_env)
       raise InvalidSignature unless signature_valid?(magic_env, rsa_pubkey)
 
+      enc = magic_env.locate('me:encoding').first.text
+      alg = magic_env.locate('me:alg').first.text
+
+      raise InvalidEncoding unless enc == ENCODING
+      raise InvalidAlgorithm unless alg == ALGORITHM
+
       data = Base64.urlsafe_decode64(magic_env.locate('me:data').first.text)
       XmlPayload.unpack(Ox.parse(data))
     end
@@ -79,10 +85,10 @@ module DiasporaFederation; module Salmon
 
     # create the signature for all fields according to specification
     def signature
-      subject = [@payload,
-                 DATA_TYPE,
-                 ENCODING,
-                 ALGORITHM].map { |i| Base64.urlsafe_encode64(i) }.join('.')
+      subject = self.class.sig_subject([@payload,
+                                        DATA_TYPE,
+                                        ENCODING,
+                                        ALGORITHM])
       @rsa_pkey.sign(DIGEST, subject)
     end
 
@@ -99,13 +105,21 @@ module DiasporaFederation; module Salmon
     # @param [Ox::Element]
     # @param [OpenSSL::PKey::RSA] public_key
     def self.signature_valid?(env, pkey)
-      subject = [Base64.urlsafe_decode64(env.locate('me:data').first.text),
-                  env.locate('me:data').first['type'],
-                  env.locate('me:encoding').first.text,
-                  env.locate('me:alg').first.text]
-                .map { |i| Base64.urlsafe_encode64(i) }.join('.')
+      subject = sig_subject([Base64.urlsafe_decode64(env.locate('me:data').first.text),
+                             env.locate('me:data').first['type'],
+                             env.locate('me:encoding').first.text,
+                             env.locate('me:alg').first.text])
+
       sig = Base64.urlsafe_decode64(env.locate('me:sig').first.text)
       pkey.verify(DIGEST, sig, subject)
+    end
+
+    # constructs the signature subject.
+    # the given array should consist of the data, data_type (mimetype), encoding
+    # and the algorithm
+    # @param [Array<String>]
+    def self.sig_subject(data_arr)
+      data_arr.map { |i| Base64.urlsafe_encode64(i) }.join('.')
     end
 
     # specific errors
@@ -114,6 +128,12 @@ module DiasporaFederation; module Salmon
     end
 
     class InvalidSignature < RuntimeError
+    end
+
+    class InvalidAlgorithm < RuntimeError
+    end
+
+    class InvalidEncoding < RuntimeError
     end
   end
 end; end
