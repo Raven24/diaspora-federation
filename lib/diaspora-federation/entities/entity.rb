@@ -1,19 +1,8 @@
 module DiasporaFederation
   class Entity
-    module ClassMethods
+    class << self
       attr_accessor :class_props
-
-      def self.included(base)
-        base.extend self
-      end
-
-      def set_allowed_props(*props)
-        @class_props = props
-        instance_eval { attr_reader *props }
-      end
     end
-
-    include Entity::ClassMethods
 
     # initializes the entity with the given attribute hash and freezes the instance
     # (extra attributes that were not defined in the class definition get discarded)
@@ -42,6 +31,14 @@ module DiasporaFederation
     # @return [Ox::Element]
     def to_xml
       entity_xml
+    end
+
+    # set the properties for this entity class.
+    # only those specified can be assigned
+    # @param [Array<Symbol>]
+    def self.set_allowed_props(*props)
+      @class_props = props
+      instance_eval { attr_reader *props }
     end
 
     private

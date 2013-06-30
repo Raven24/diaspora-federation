@@ -1,29 +1,5 @@
 module DiasporaFederation
   class XmlPayload
-    module ClassMethods
-      def wrap_valid?(element)
-        (element.name == 'XML' && element.nodes[0] &&
-        element.nodes[0].name == 'post' && element.nodes[0].nodes[0])
-      end
-
-      # some of this is from Rails "Inflector.camelize"
-      def entity_class(term)
-        string = term.to_s
-        string = string.sub(/^[a-z\d]*/) { $&.capitalize }
-        string.gsub(/(?:_|(\/))([a-z\d]*)/i) { $2.capitalize }.gsub('/', '::')
-      end
-
-      def attribute_hash(node_arr)
-        data = {}
-        node_arr.each do |node|
-          data[node.name.to_sym] = node.text
-        end
-        data
-      end
-    end
-
-    self.extend XmlPayload::ClassMethods
-
     # encapsulates an entity inside the wrapping xml structure
     # and returns the xml object
     #
@@ -60,6 +36,34 @@ module DiasporaFederation
       raise UnknownEntity unless Entities.const_defined?(klass_name)
 
       Entities.const_get(klass_name).new(attribute_hash(data.nodes))
+    end
+
+    private
+
+    # @param [Ox::Element]
+    def self.wrap_valid?(element)
+      (element.name == 'XML' && element.nodes[0] &&
+      element.nodes[0].name == 'post' && element.nodes[0].nodes[0])
+    end
+
+    # some of this is from Rails "Inflector.camelize"
+    # @param [String] snake_case class name
+    # @return [String] CamelCase class name
+    def self.entity_class(term)
+      string = term.to_s
+      string = string.sub(/^[a-z\d]*/) { $&.capitalize }
+      string.gsub(/(?:_|(\/))([a-z\d]*)/i) { $2.capitalize }.gsub('/', '::')
+    end
+
+    # construct a hash of attributes from the node names and the text inside
+    # @param [Ox::Element]
+    # @return [Hash]
+    def self.attribute_hash(node_arr)
+      data = {}
+      node_arr.each do |node|
+        data[node.name.to_sym] = node.text
+      end
+      data
     end
 
     # specific errors

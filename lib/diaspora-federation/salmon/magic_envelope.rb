@@ -13,32 +13,6 @@
 
 module DiasporaFederation; module Salmon
   class MagicEnvelope
-    module ClassMethods
-      # @param [Ox::Element]
-      def envelope_valid?(env)
-        (env.instance_of?(Ox::Element) &&
-         env.name == 'me:env' &&
-         !env.locate('me:data').empty? &&
-         !env.locate('me:encoding').empty? &&
-         !env.locate('me:alg').empty? &&
-         !env.locate('me:sig').empty?)
-      end
-
-      # @param [Ox::Element]
-      # @param [OpenSSL::PKey::RSA] public_key
-      def signature_valid?(env, pkey)
-        subject = [Base64.urlsafe_decode64(env.locate('me:data').first.text),
-                   env.locate('me:data').first['type'],
-                   env.locate('me:encoding').first.text,
-                   env.locate('me:alg').first.text]
-                  .map { |i| Base64.urlsafe_encode64(i) }.join('.')
-        sig = Base64.urlsafe_decode64(env.locate('me:sig').first.text)
-        pkey.verify(DIGEST, sig, subject)
-      end
-    end
-
-    self.extend MagicEnvelope::ClassMethods
-
     # encoding used for the payload data
     ENCODING = 'base64url'
 
@@ -86,6 +60,8 @@ module DiasporaFederation; module Salmon
       env
     end
 
+    # extracts the entity encoded in the magic envelope data
+    # does some sanity checking to avoid bad surprises
     # @param [Ox::Element]
     # @param [OpenSSL::PKey::RSA] public_key to verify the signature
     # @return [Entity]
@@ -101,12 +77,35 @@ module DiasporaFederation; module Salmon
 
     private
 
+    # create the signature for all fields according to specification
     def signature
       subject = [@payload,
                  DATA_TYPE,
                  ENCODING,
                  ALGORITHM].map { |i| Base64.urlsafe_encode64(i) }.join('.')
       @rsa_pkey.sign(DIGEST, subject)
+    end
+
+    # @param [Ox::Element]
+    def self.envelope_valid?(env)
+      (env.instance_of?(Ox::Element) &&
+        env.name == 'me:env' &&
+        !env.locate('me:data').empty? &&
+        !env.locate('me:encoding').empty? &&
+        !env.locate('me:alg').empty? &&
+        !env.locate('me:sig').empty?)
+    end
+
+    # @param [Ox::Element]
+    # @param [OpenSSL::PKey::RSA] public_key
+    def self.signature_valid?(env, pkey)
+      subject = [Base64.urlsafe_decode64(env.locate('me:data').first.text),
+                  env.locate('me:data').first['type'],
+                  env.locate('me:encoding').first.text,
+                  env.locate('me:alg').first.text]
+                .map { |i| Base64.urlsafe_encode64(i) }.join('.')
+      sig = Base64.urlsafe_decode64(env.locate('me:sig').first.text)
+      pkey.verify(DIGEST, sig, subject)
     end
 
     # specific errors
