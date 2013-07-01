@@ -13,6 +13,8 @@
 
 module DiasporaFederation; module Salmon
   class MagicEnvelope
+    attr_reader :payload
+
     # encoding used for the payload data
     ENCODING = 'base64url'
 
@@ -60,12 +62,22 @@ module DiasporaFederation; module Salmon
       env
     end
 
+    # encrypts the payload with a new AES cipher and returns the cipher params
+    # @return [Hash] { key: '...', iv: '...' }
+    def encrypt!
+      encryption_data = Salmon.aes_encrypt(@payload)
+      @payload = encryption_data[:ciphertext]
+
+      { key: encryption_data[:key], iv: encryption_data[:iv] }
+    end
+
     # extracts the entity encoded in the magic envelope data
     # does some sanity checking to avoid bad surprises
     # @param [Ox::Element]
     # @param [OpenSSL::PKey::RSA] public_key to verify the signature
+    # @param [Hash] { iv: '...', key: '...' } for decrypting previously encrypted data
     # @return [Entity]
-    def self.unenvelop(magic_env, rsa_pubkey)
+    def self.unenvelop(magic_env, rsa_pubkey, cipher_params=nil)
       raise ArgumentError unless rsa_pubkey.instance_of?(OpenSSL::PKey::RSA) &&
                                  magic_env.instance_of?(Ox::Element)
       raise InvalidEnvelope unless envelope_valid?(magic_env)
@@ -78,6 +90,9 @@ module DiasporaFederation; module Salmon
       raise InvalidAlgorithm unless alg == ALGORITHM
 
       data = Base64.urlsafe_decode64(magic_env.locate('me:data').first.text)
+      unless cipher_params.nil?
+        data = Salmon.aes_decrypt(data, cipher_params[:key], cipher_params[:iv])
+      end
       XmlPayload.unpack(Ox.parse(data))
     end
 

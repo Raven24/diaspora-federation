@@ -8,6 +8,8 @@
 require 'diaspora-federation'
 require 'ostruct'
 
+require_relative 'diaspora-federation/salmon/shared_slap_specs'
+
 include DiasporaFederation
 
 class Entities::TestEntity < Entity

@@ -1,5 +1,5 @@
 
-# a diaspora-flavored salmon-enveloped xml message looks like the following:
+# a Diaspora*-flavored salmon-enveloped xml message looks like the following:
 #
 # <?xml version="1.0" encoding="UTF-8"?>
 # <diaspora xmlns="https://joindiaspora.com/protocol" xmlns:me="http://salmon-protocol.org/ns/magic-env">
@@ -12,7 +12,7 @@
 
 module DiasporaFederation; module Salmon
   class Slap
-    attr_accessor :author_id, :magic_envelope
+    attr_accessor :author_id, :magic_envelope, :cipher_params
 
 
     # @param [OpenSSL::PKey::RSA] public_key for validating the signature
@@ -21,7 +21,7 @@ module DiasporaFederation; module Salmon
       return @entity unless @entity.nil?
 
       raise ArgumentError unless pubkey.instance_of?(OpenSSL::PKey::RSA)
-      @entity = MagicEnvelope.unenvelop(magic_envelope, pubkey)
+      @entity = MagicEnvelope.unenvelop(magic_envelope, pubkey, @cipher_params)
       @entity
     end
 
@@ -30,7 +30,7 @@ module DiasporaFederation; module Salmon
     # @return [Slap]
     def self.from_xml(slap_xml)
       raise ArgumentError unless slap_xml.instance_of?(String)
-      doc = Ox.load(ensure_xml_prolog(slap_xml), mode: :generic)
+      doc = Ox.load(Salmon.ensure_xml_prolog(slap_xml), mode: :generic)
       slap = Slap.new
 
       author_elem = doc.locate('diaspora/header/author_id')
@@ -46,7 +46,7 @@ module DiasporaFederation; module Salmon
 
     # creates a signed salmon slap and returns the xml string
     # @param [String] diaspora_handle of the author
-    # @param [OpenSSL::PKey::RSA] private_key for signing the payload
+    # @param [OpenSSL::PKey::RSA] sender private_key for signing the magic envelope
     # @param [Entity]
     # @return [String] Salmon XML
     def self.to_xml(author_id, pkey, entity)
@@ -75,20 +75,9 @@ module DiasporaFederation; module Salmon
 
     private
 
-    def self.ensure_xml_prolog(xml_str)
-      if xml_str.index('<?xml').nil?
-        return '<?xml version="1.0" encoding="UTF-8"?>' + "\n" + xml_str
-      end
-
-      xml_str
-    end
-
     # specific errors
 
     class MissingAuthor < RuntimeError
-    end
-
-    class MissingMagicEnvelope < RuntimeError
     end
   end
 end; end

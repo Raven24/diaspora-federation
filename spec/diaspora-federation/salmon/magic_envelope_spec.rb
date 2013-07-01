@@ -62,6 +62,33 @@ describe Salmon::MagicEnvelope do
     end
   end
 
+  context '#encrypt!' do
+    subject { Salmon::MagicEnvelope.new(pkey, payload) }
+
+    it 'encrypts the payload, returning cipher params' do
+      params = {}
+      expect {
+        params = subject.encrypt!
+      }.not_to raise_error
+      params.should include(:key, :iv)
+    end
+
+    it 'actually encrypts the payload' do
+      plain_payload = subject.payload
+      params = subject.encrypt!
+      encrypted_payload = subject.payload
+
+      cipher = OpenSSL::Cipher.new(Salmon::AES_CIPHER)
+      cipher.encrypt
+      cipher.iv = Base64.decode64(params[:iv])
+      cipher.key = Base64.decode64(params[:key])
+
+      ciphertext = cipher.update(plain_payload) + cipher.final
+
+      Base64.strict_encode64(ciphertext).should eql(encrypted_payload)
+    end
+  end
+
   context '::unenvelop' do
     context 'sanity' do
       it 'works with sane input' do
@@ -116,6 +143,17 @@ describe Salmon::MagicEnvelope do
 
     it 'returns the original entity' do
       e = Salmon::MagicEnvelope.unenvelop(envelope, pkey.public_key)
+      e.should be_an_instance_of Entities::TestEntity
+      e.test.should eql('asdf')
+    end
+
+    it 'decrypts on the fly, when cipher params are present' do
+      env = Salmon::MagicEnvelope.new(pkey, payload)
+      params = env.encrypt!
+
+      envelope = env.envelop
+
+      e = Salmon::MagicEnvelope.unenvelop(envelope, pkey.public_key, params)
       e.should be_an_instance_of Entities::TestEntity
       e.test.should eql('asdf')
     end

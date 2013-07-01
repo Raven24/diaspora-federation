@@ -41,7 +41,6 @@ describe Salmon::Slap do
 
       it 'verifies the existence of an author_id' do
         faulty_xml = <<XML
-<?xml version="1.0" encoding="UTF-8"?>
 <diaspora>
   <header/>
 </diaspora>
@@ -53,7 +52,6 @@ XML
 
       it 'verifies the existence of a magic envelope' do
         faulty_xml = <<-XML
-<?xml version="1.0" encoding="UTF-8"?>
 <diaspora>
   <header>
     <author_id>#{author_id}</author_id>
@@ -62,41 +60,14 @@ XML
 XML
         expect {
           Salmon::Slap.from_xml(faulty_xml)
-        }.to raise_error Salmon::Slap::MissingMagicEnvelope
+        }.to raise_error Salmon::MissingMagicEnvelope
       end
     end
   end
 
-  context 'instance' do
-    subject { Salmon::Slap.from_xml(slap) }
-
-    its(:author_id) { should eql(author_id) }
-
-    context '#entity' do
-      it 'requires the pubkey for the first time (to verify the signature)' do
-        expect { subject.entity }.to raise_error
-      end
-
-      it 'works when the pubkey is given' do
-        expect {
-          subject.entity(pkey.public_key)
-        }.not_to raise_error
-      end
-
-      it 'returns the entity' do
-        e = subject.entity(pkey.public_key)
-        e.should be_an_instance_of Entities::TestEntity
-        e.test.should eql('qwertzuiop')
-      end
-
-      it 'does not require the pubkey in consecutive calls' do
-        e1 = nil; e2 = nil
-        expect {
-          e1 = subject.entity(pkey.public_key)
-          e2 = subject.entity
-        }.not_to raise_error
-        e1.should eql(e2)
-      end
+  context 'generated instance' do
+    it_behaves_like "a Slap instance" do
+      subject { Salmon::Slap.from_xml(slap) }
     end
   end
 end
