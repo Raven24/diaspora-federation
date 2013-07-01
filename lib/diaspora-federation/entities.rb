@@ -1,3 +1,3 @@
 
-require_relative 'entities/entity'
-require_relative 'entities/profile'
+require 'diaspora-federation/entities/entity'
+require 'diaspora-federation/entities/profile'

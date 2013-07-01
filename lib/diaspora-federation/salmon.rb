@@ -60,6 +60,6 @@ module DiasporaFederation
   end
 end
 
-require_relative 'salmon/magic_envelope'
-require_relative 'salmon/slap'
-require_relative 'salmon/encrypted_slap'
+require 'diaspora-federation/salmon/magic_envelope'
+require 'diaspora-federation/salmon/slap'
+require 'diaspora-federation/salmon/encrypted_slap'

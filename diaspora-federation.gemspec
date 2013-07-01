@@ -1,5 +1,5 @@
-lib = File.expand_path('../lib/', __FILE__)
-$:.unshift lib unless $:.include?(lib)
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 require 'diaspora-federation/version'
 
@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.description = 'This gem provides all functionality for communication among various installations of Diaspora*'
   s.authors     = ['Florian Staudacher']
   s.email       = 'florian_staudacher@yahoo.de'
-  s.homepage    = 'https://github.com/'
+  s.homepage    = 'https://github.com/Raven24/diaspora-federation'
 
   s.required_ruby_version = '>= 1.9.3'
 
