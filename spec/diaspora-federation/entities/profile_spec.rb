@@ -24,7 +24,7 @@ describe Entities::Profile do
   <image_url>/some/image.jpg</image_url>
   <image_url_medium/>
   <image_url_small/>
-  <birthday>#{Date.today.to_s}</birthday>
+  <birthday>#{Date.today}</birthday>
   <gender>something</gender>
   <bio>i am interesting</bio>
   <location>Earth</location>
@@ -35,33 +35,7 @@ describe Entities::Profile do
 XML
   }
 
-  it 'should be an Entity' do
-    Entities::Profile.should be < Entity
-  end
-
-  it 'has its properties set' do
-    Entities::Profile.class_props.should include(:diaspora_handle,
-                                       :first_name,
-                                       :last_name,
-                                       :image_url,
-                                       :image_url_medium,
-                                       :image_url_small,
-                                       :birthday,
-                                       :gender,
-                                       :bio,
-                                       :location,
-                                       :searchable,
-                                       :nsfw,
-                                       :tag_string)
-  end
-
-  context 'behaviour' do
-    subject { Entities::Profile.new(data) }
-
-    its(:to_h) { should == data }
-
-    it 'produces correct XML' do
-      Ox.dump(subject.to_xml).should eql(xml)
-    end
+  it_behaves_like "an Entity subclass" do
+    let(:klass) { Entities::Profile }
   end
 end

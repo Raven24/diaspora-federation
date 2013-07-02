@@ -8,6 +8,7 @@
 require 'diaspora-federation'
 require 'ostruct'
 
+require 'diaspora-federation/entities/shared_entity_specs'
 require 'diaspora-federation/salmon/shared_slap_specs'
 
 include DiasporaFederation
