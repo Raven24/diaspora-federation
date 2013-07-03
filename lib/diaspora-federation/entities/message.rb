@@ -3,8 +3,8 @@ module DiasporaFederation; module Entities
 
     set_allowed_props :guid,
                       :parent_guid,
-                      :parent_author_signature, # why?
-                      :author_signature,        # why?
+                      :parent_author_signature,
+                      :author_signature,
                       :text,
                       :created_at,
                       :diaspora_handle,

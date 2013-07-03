@@ -5,8 +5,8 @@ module DiasporaFederation; module Entities
                       :guid,
                       :target_type,
                       :parent_guid,
-                      :parent_author_signature, # why?
-                      :author_signature,        # why?
+                      :parent_author_signature,
+                      :author_signature,
                       :diaspora_handle
 
   end
