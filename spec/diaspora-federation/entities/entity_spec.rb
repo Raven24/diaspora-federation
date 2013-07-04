@@ -19,7 +19,7 @@ describe Entity do
 
   it 'sets property values on initialization' do
     t = Entities::EntityTest.new(data)
-    t.to_h.should == data
+    t.to_h.should eql(data)
   end
 
   it 'freezes the instance after initialization' do
@@ -50,6 +50,42 @@ describe Entity do
       t.to_xml.nodes.each do |node|
         ['test1','test2','test3'].should include(node.name)
       end
+    end
+  end
+
+  context 'nested entities' do
+    class Entities::NestedTest < Entity
+      define_props do
+        property :asdf
+        property :qwer
+        entity :other, Entities::EntityTest
+        entity :many, [Entities::EntityTest]
+      end
+    end
+
+    let(:nested_data) {
+      {asdf: 'FDSA',
+       qwer: 'REWQ',
+       other: Entities::EntityTest.new(data),
+       many: [Entities::EntityTest.new(data), Entities::EntityTest.new(data)]}
+    }
+
+    it 'gets included in the properties' do
+      Entities::NestedTest.class_prop_names.should include(:other, :many)
+    end
+
+    it 'gets returned by #to_h' do
+      e = Entities::NestedTest.new(nested_data)
+      e.to_h.should eql(nested_data)
+    end
+
+    it 'gets xml-ified by #to_xml' do
+      e = Entities::NestedTest.new(nested_data)
+      xml = e.to_xml
+      xml.nodes.each do |n|
+        ['asdf', 'qwer', 'entity_test'].should include(n.name)
+      end
+      xml.locate('entity_test').should have(3).items
     end
   end
 end

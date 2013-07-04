@@ -11,7 +11,7 @@ module DiasporaFederation
     def initialize(args)
       raise ArgumentError.new("expected a Hash") unless args.is_a?(Hash)
       args.each do |k,v|
-        instance_variable_set("@#{k}", v) if settable?(k, v)
+        instance_variable_set("@#{k}", v) if setable?(k, v)
       end
       freeze
     end
@@ -34,8 +34,8 @@ module DiasporaFederation
     end
 
     # set the properties for this entity class.
-    # only those specified can be assigned
-    # @param [Array<Symbol>]
+    # only the properties that were specified can be assigned
+    # @param [Proc]
     def self.define_props(&block)
       @class_props = PropertiesDSL.new(&block).get_properties
       instance_eval { attr_reader *@class_props.map { |p| p[:name] } }
@@ -43,18 +43,43 @@ module DiasporaFederation
 
     private
 
-    def settable?(name, val)
-      self.class.class_prop_names.include?(name)
+    def setable?(name, val)
+      prop_def = self.class.class_props.detect { |p| p[:name] == name }
+      return false if prop_def.nil? # property undefined
+
+      type = prop_def[:type]
+      if  type == String && val.respond_to?(:to_s)
+        true
+      elsif type.respond_to?(:ancestors) && type.ancestors.include?(Entity) && val.is_a?(Entity)
+        true
+      elsif type.instance_of?(Array) && val.instance_of?(Array)
+        val.all? { |v| v.instance_of?(type.first) }
+      else
+        false
+      end
     end
 
     def entity_xml
       root_element = Ox::Element.new(entity_name)
 
-      self.class.class_prop_names.each do |prop|
-        node = Ox::Element.new(prop.to_s)
-        data = self.send(prop).to_s
-        node << data unless data.empty?
-        root_element << node
+      self.class.class_props.each do |prop_def|
+        name = prop_def[:name]
+        type = prop_def[:type]
+        if type == String
+          # create simple node, fill it and append to root
+          node = Ox::Element.new(name.to_s)
+          data = self.send(name).to_s
+          node << data unless data.empty?
+          root_element << node
+        elsif type.instance_of?(Array)
+          # call #to_xml for each item and append to root
+          self.send(name).each do |item|
+            root_element << item.to_xml
+          end
+        elsif type.ancestors.include?(Entity)
+          # append the nested entity's xml to the root
+          root_element << self.send(name).to_xml
+        end
       end
 
       root_element
