@@ -1,8 +1,10 @@
 module DiasporaFederation; module Entities
   class Request < Entity
 
-    set_allowed_props :sender_handle,
-                      :recipient_handle
+    define_props do
+      property :sender_handle
+      property :recipient_handle
+    end
 
   end
 end; end

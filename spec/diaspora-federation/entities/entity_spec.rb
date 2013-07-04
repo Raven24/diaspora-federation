@@ -1,7 +1,11 @@
 require 'spec_helper'
 
 class Entities::EntityTest < Entity
-  set_allowed_props :test1, :test2, :test3
+  define_props do
+    property :test1
+    property :test2
+    property :test3
+  end
 end
 
 describe Entity do
@@ -10,7 +14,7 @@ describe Entity do
   specify { Entities::EntityTest.should be < Entity }
 
   it 'sets the properties on the class' do
-    Entities::EntityTest.class_props.should include(:test1, :test2, :test3)
+    Entities::EntityTest.class_prop_names.should include(:test1, :test2, :test3)
   end
 
   it 'sets property values on initialization' do

@@ -1,16 +1,18 @@
 module DiasporaFederation; module Entities
   class Photo < Entity
 
-    set_allowed_props :guid,
-                      :diaspora_handle,
-                      :public,
-                      :created_at,
-                      :remote_photo_path,
-                      :remote_photo_name,
-                      :text,
-                      :status_message_guid,
-                      :height,
-                      :width
+    define_props do
+      property :guid
+      property :diaspora_handle
+      property :public
+      property :created_at
+      property :remote_photo_path
+      property :remote_photo_name
+      property :text
+      property :status_message_guid
+      property :height
+      property :width
+    end
 
   end
 end; end

@@ -1,9 +1,11 @@
 module DiasporaFederation; module Entities
   class Location < Entity
 
-    set_allowed_props :address,
-                      :lat,
-                      :lng
+    define_props do
+      property :address
+      property :lat
+      property :lng
+    end
 
   end
 end; end

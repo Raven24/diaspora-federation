@@ -1,12 +1,14 @@
 module DiasporaFederation; module Entities
   class Comment < Entity
 
-    set_allowed_props :guid,
-                      :parent_guid,
-                      :parent_author_signature,
-                      :author_signature,
-                      :text,
-                      :diaspora_handle
+    define_props do
+      property :guid
+      property :parent_guid
+      property :parent_author_signature
+      property :author_signature
+      property :text
+      property :diaspora_handle
+    end
 
   end
 end; end

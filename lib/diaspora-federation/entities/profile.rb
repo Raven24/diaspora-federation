@@ -1,19 +1,21 @@
 module DiasporaFederation; module Entities
   class Profile < Entity
 
-    set_allowed_props :diaspora_handle,
-                      :first_name,
-                      :last_name,
-                      :image_url,
-                      :image_url_medium,
-                      :image_url_small,
-                      :birthday,
-                      :gender,
-                      :bio,
-                      :location,
-                      :searchable,
-                      :nsfw,
-                      :tag_string
+    define_props do
+      property :diaspora_handle
+      property :first_name
+      property :last_name
+      property :image_url
+      property :image_url_medium
+      property :image_url_small
+      property :birthday
+      property :gender
+      property :bio
+      property :location
+      property :searchable
+      property :nsfw
+      property :tag_string
+    end
 
   end
 end; end

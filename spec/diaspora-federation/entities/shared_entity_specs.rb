@@ -6,7 +6,7 @@ shared_examples 'an Entity subclass' do
   end
 
   it 'has its properties set' do
-    klass.class_props.should include(*data.keys)
+    klass.class_prop_names.should include(*data.keys)
   end
 
   context 'behaviour' do

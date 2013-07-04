@@ -1,7 +1,9 @@
 module DiasporaFederation; module Entities
   class AccountDeletion < Entity
 
-    set_allowed_props :diaspora_handle
+    define_props do
+      property :diaspora_handle
+    end
 
   end
 end; end

@@ -1,11 +1,13 @@
 module DiasporaFederation; module Entities
   class Post < Entity
 
-    set_allowed_props :guid,
-                      :diaspora_handle,
-                      :public,
-                      :created_at,
-                      :provider_display_name
+    define_props do
+      property :guid
+      property :diaspora_handle
+      property :public
+      property :created_at
+      property :provider_display_name
+    end
 
   end
 end; end

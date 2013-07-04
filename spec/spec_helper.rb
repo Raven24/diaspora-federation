@@ -14,7 +14,9 @@ require 'diaspora-federation/salmon/shared_slap_specs'
 include DiasporaFederation
 
 class Entities::TestEntity < Entity
-  set_allowed_props :test
+  define_props do
+    property :test
+  end
 end
 
 RSpec.configure do |config|

@@ -1,12 +1,14 @@
 module DiasporaFederation; module Entities
   class Participation < Entity
 
-    set_allowed_props :guid,
-                      :target_type,
-                      :parent_guid,
-                      :parent_author_signature,
-                      :author_signature,
-                      :diaspora_handle
+    define_props do
+      property :guid
+      property :target_type
+      property :parent_guid
+      property :parent_author_signature
+      property :author_signature
+      property :diaspora_handle
+    end
 
   end
 end; end

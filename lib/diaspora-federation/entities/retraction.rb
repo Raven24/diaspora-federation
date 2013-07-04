@@ -1,9 +1,11 @@
 module DiasporaFederation; module Entities
   class Retraction < Entity
 
-    set_allowed_props :post_guid,
-                      :diaspora_handle,
-                      :type
+    define_props do
+      property :post_guid
+      property :diaspora_handle
+      property :type
+    end
 
   end
 end; end
