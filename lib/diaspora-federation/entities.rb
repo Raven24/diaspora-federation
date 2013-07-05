@@ -1,6 +1,4 @@
 
-require 'diaspora-federation/entities/entity'
-
 # stand-alone
 require 'diaspora-federation/entities/account_deletion'
 require 'diaspora-federation/entities/comment'

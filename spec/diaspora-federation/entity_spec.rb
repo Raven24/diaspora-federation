@@ -53,6 +53,30 @@ describe Entity do
     end
   end
 
+  context '::entity_name' do
+    it 'strips the module and returns the name underscored' do
+      Entities::EntityTest.entity_name.should eql('entity_test')
+      Entities::TestNestedEntity.entity_name.should eql('test_nested_entity')
+      Entities::OtherEntity.entity_name.should eql('other_entity')
+    end
+  end
+
+  context '::nested_class_props' do
+    it 'returns the definition of nested class properties in an array' do
+      n_props = Entities::TestNestedEntity.nested_class_props
+      n_props.should be_an_instance_of(Array)
+      n_props.map { |p| p[:name] }.should include(:test, :multi)
+      n_props.map { |p| p[:type] }.should include(Entities::TestEntity, [Entities::OtherEntity])
+    end
+  end
+
+  context '::class_prop_names' do
+    it 'returns the names of all class props in an array' do
+      Entities::EntityTest.class_prop_names.should be_an_instance_of(Array)
+      Entities::EntityTest.class_prop_names.should include(:test1, :test2, :test3)
+    end
+  end
+
   context 'nested entities' do
     class Entities::NestedTest < Entity
       define_props do

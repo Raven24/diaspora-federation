@@ -7,6 +7,7 @@ module DiasporaFederation
     def initialize(&block)
       @properties = []
       instance_eval(&block)
+      @properties.freeze
     end
 
     # define a generic property

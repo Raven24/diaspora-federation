@@ -1,7 +1,7 @@
 module DiasporaFederation
   class XmlPayload
-    # encapsulates an entity inside the wrapping xml structure
-    # and returns the xml object
+    # Encapsulates an Entity inside the wrapping xml structure
+    # and returns the XML Object.
     #
     # the wrapper looks like so:
     #   <XML>
@@ -10,8 +10,8 @@ module DiasporaFederation
     #     </post>
     #   </XML>
     #
-    # @param [Entity]
-    # @return [Ox::Element]
+    # @param [Entity] subject
+    # @return [Ox::Element] XML root node
     def self.pack(entity)
       raise ArgumentError unless entity.is_a?(Entity)
 
@@ -23,10 +23,11 @@ module DiasporaFederation
       wrap
     end
 
-    # extracts the entity xml from the wrapping xml structure and returns the
-    # packed entity inside the payload
-    # @param [Ox::Element]
-    # @return [Entity]
+    # Extracts the Entity XML from the wrapping XML structure and returns the
+    # Entity that was packed inside the payload.
+    #
+    # @param [Ox::Element] XML root node
+    # @return [Entity] re-constructed Entity instance
     def self.unpack(xml)
       raise ArgumentError unless xml.instance_of?(Ox::Element)
       raise InvalidStructure unless wrap_valid?(xml)
@@ -35,7 +36,8 @@ module DiasporaFederation
       klass_name = entity_class(data.name)
       raise UnknownEntity unless Entities.const_defined?(klass_name)
 
-      Entities.const_get(klass_name).new(attribute_hash(data.nodes))
+      klass = Entities.const_get(klass_name)
+      populate_entity(klass, data)
     end
 
     private
@@ -46,7 +48,11 @@ module DiasporaFederation
       element.nodes[0].name == 'post' && element.nodes[0].nodes[0])
     end
 
-    # some of this is from Rails "Inflector.camelize"
+    # Transform the given String from the lowercase underscored version to a
+    # camelized variant, used later for getting the Class constant.
+    #
+    # @note some of this is from Rails "Inflector.camelize"
+    #
     # @param [String] snake_case class name
     # @return [String] CamelCase class name
     def self.entity_class(term)
@@ -55,15 +61,38 @@ module DiasporaFederation
       string.gsub(/(?:_|(\/))([a-z\d]*)/i) { $2.capitalize }.gsub('/', '::')
     end
 
-    # construct a hash of attributes from the node names and the text inside
-    # @param [Ox::Element]
-    # @return [Hash]
-    def self.attribute_hash(node_arr)
+    # Construct a new instance of the given Entity and populate the properties
+    # with the attributes found in the XML.
+    # Works recursively on nested Entities and Arrays thereof.
+    #
+    # @param [Class] entity class
+    # @param [Ox::Element] xml nodes
+    # @return [Entity] instance
+    def self.populate_entity(klass, node)
       data = {}
-      node_arr.each do |node|
-        data[node.name.to_sym] = node.text
+      klass.class_props.each do |prop_def|
+        name = prop_def[:name]
+        type = prop_def[:type]
+
+        if type == String
+          # create simple entry in data hash
+          n = node.locate(name.to_s)
+          data[name] = n.first.text if n.any?
+        elsif type.instance_of?(Array)
+          # collect all nested children of that type and create an array in the data hash
+          n = node.locate(type.first.entity_name)
+          data[name] = []
+          n.each do |child|
+            data[name] << populate_entity(type.first, child)
+          end if n.any?
+        elsif type.ancestors.include?(Entity)
+          # create an entry in the data hash for the nested entity
+          n = node.locate(type.entity_name)
+          data[name] = populate_entity(type, n.first) if n.any?
+        end
       end
-      data
+
+      klass.new(data)
     end
 
     # specific errors

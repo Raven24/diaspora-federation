@@ -4,10 +4,14 @@ module DiasporaFederation
       attr_accessor :class_props
     end
 
-    # initializes the entity with the given attribute hash and freezes the instance
-    # (extra attributes that were not defined in the class definition get discarded)
-    # @param [Hash]
-    # @return [Entitiy]
+    # Initializes the Entity with the given attribute hash and freezes the created
+    # instance it returns.
+    #
+    # @note Attributes not defined as part of the class definition {::define_props}
+    #       get discarded silently.
+    #
+    # @param [Hash] data
+    # @return [Entitiy] new instance
     def initialize(args)
       raise ArgumentError.new("expected a Hash") unless args.is_a?(Hash)
       args.each do |k,v|
@@ -16,8 +20,8 @@ module DiasporaFederation
       freeze
     end
 
-    # returns a hash representing this entity (attributes => values)
-    # @return [Hash]
+    # Returns a Hash representing this Entity (attributes => values)
+    # @return [Hash] data
     def to_h
       out = {}
       self.class.class_prop_names.map do |prop|
@@ -26,16 +30,25 @@ module DiasporaFederation
       out
     end
 
-    # returns the xml representation for this entity constructed out of
+    # Returns the XML representation for this entity constructed out of
     # Ox::Elements
-    # @return [Ox::Element]
+    #
+    # @see Ox::dump
+    # @see XmlPayload::pack
+    #
+    # @return [Ox::Element] root element containing properties as child elements
     def to_xml
       entity_xml
     end
 
-    # set the properties for this entity class.
-    # only the properties that were specified can be assigned
-    # @param [Proc]
+    # Set the properties for this Entity class using a simple DSL.
+    #
+    # @note Only the properties that were specified can be assigned during
+    #       initialization
+    #
+    # @see PropertiesDSL
+    #
+    # @param [Proc] block
     def self.define_props(&block)
       @class_props = PropertiesDSL.new(&block).get_properties
       instance_eval { attr_reader *@class_props.map { |p| p[:name] } }
@@ -71,13 +84,13 @@ module DiasporaFederation
     end
 
     def entity_xml
-      root_element = Ox::Element.new(entity_name)
+      root_element = Ox::Element.new(self.class.entity_name)
 
       self.class.class_props.each do |prop_def|
         name = prop_def[:name]
         type = prop_def[:type]
         if type == String
-          # create simple node, fill it and append to root
+          # create simple node, fill it with text and append to root
           node = Ox::Element.new(name.to_s)
           data = send(name).to_s
           node << data unless data.empty?
@@ -85,7 +98,7 @@ module DiasporaFederation
         else
           # call #to_xml for each item and append to root
           [*send(name)].each do |item|
-            root_element << item.to_xml
+            root_element << item.to_xml unless item.nil?
           end
         end
       end
@@ -94,8 +107,8 @@ module DiasporaFederation
     end
 
     # some of this is from Rails "Inflector.demodulize" and "Inflector.undersore"
-    def entity_name
-      word = self.class.name.dup
+    def self.entity_name
+      word = self.name.dup
       if (i = word.rindex('::'))
         word = word[(i+2)..-1]
       end
@@ -107,10 +120,13 @@ module DiasporaFederation
       word
     end
 
-    def self.class_prop_names
-      return @class_prop_names unless @class_prop_names.nil?
+    def self.nested_class_props
+      @nested_class_props ||= @class_props.select { |p| p[:type] != String }
+      @nested_class_props
+    end
 
-      @class_prop_names = @class_props.map { |p| p[:name] }
+    def self.class_prop_names
+      @class_prop_names ||= @class_props.map { |p| p[:name] }
       @class_prop_names
     end
   end

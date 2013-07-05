@@ -11,6 +11,13 @@ describe PropertiesDSL do
   end
 
   context 'dsl' do
+    it 'returns a frozen Array' do
+      i = PropertiesDSL.new { property :test }
+      p = i.get_properties
+      p.should be_an_instance_of(Array)
+      p.should be_frozen
+    end
+
     context 'simple properties' do
       it 'can name simple properties by symbol' do
         i = PropertiesDSL.new {

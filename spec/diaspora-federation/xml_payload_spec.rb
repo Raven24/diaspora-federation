@@ -89,5 +89,24 @@ XML
         subject.test.should eql('asdf')
       end
     end
+
+    context 'nested entities' do
+      let(:child_entity1) { Entities::TestEntity.new({test: 'bla'}) }
+      let(:child_entity2) { Entities::OtherEntity.new({asdf: 'blabla'}) }
+      let(:nested_entity) {
+        Entities::TestNestedEntity.new({asdf: 'QWERT',
+                                        test: child_entity1,
+                                        multi: [child_entity2, child_entity2]})
+      }
+      let(:nested_payload) { XmlPayload.pack(nested_entity) }
+
+      it 'parses the xml with all the nested data' do
+        e = XmlPayload.unpack(nested_payload)
+        e.test.to_h.should eql(child_entity1.to_h)
+        e.multi.should have(2).items
+        e.multi.first.to_h.should eql(child_entity2.to_h)
+        e.asdf.should eql('QWERT')
+      end
+    end
   end
 end
