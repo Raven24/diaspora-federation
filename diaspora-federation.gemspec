@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.version     = DiasporaFederation::VERSION
   s.date        = '2013-06-28'
   s.summary     = 'Diaspora* Federation module'
-  s.description = 'This gem provides all functionality for communication among various installations of Diaspora*'
+  s.description = 'This gem provides the functionality for de-/serialization and de-/encryption of Entities in the protocol used for communication among the various installations of Diaspora*'
   s.authors     = ['Florian Staudacher']
   s.email       = 'florian_staudacher@yahoo.de'
   s.homepage    = 'https://github.com/Raven24/diaspora-federation'
@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'valid', '~> 0.3.1'
   s.add_dependency 'ox', '~> 2.0.4'
 
-  s.add_development_dependency 'rake', '10.1.0'
-  s.add_development_dependency 'rspec', '2.13.0'
+  s.add_development_dependency 'rake', '~> 10.1.0'
+  s.add_development_dependency 'rspec', '~> 2.13.0'
+  s.add_development_dependency 'fabrication', '~> 2.7.2'
 end

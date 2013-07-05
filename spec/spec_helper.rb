@@ -7,6 +7,9 @@
 
 require 'diaspora-federation'
 require 'ostruct'
+require 'fabrication'
+
+require 'fabricators'
 
 require 'diaspora-federation/entities/shared_entity_specs'
 require 'diaspora-federation/salmon/shared_slap_specs'

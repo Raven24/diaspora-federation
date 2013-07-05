@@ -1,36 +1,24 @@
 require 'spec_helper'
 
 describe Entities::Profile do
-  let(:data) { {diaspora_handle: 'test@test.test',
-                first_name: 'name',
-                last_name: '',
-                image_url: '/some/image.jpg',
-                image_url_medium: '',
-                image_url_small: '',
-                birthday: Date.today,
-                gender: 'something',
-                bio: 'i am interesting',
-                location: 'Earth',
-                searchable: false,
-                nsfw: false,
-                tag_string: '#i #love #tags'} }
+  let(:data) { Fabricate.attributes_for(:profile) }
 
   let(:xml) { <<-XML
 
 <profile>
-  <diaspora_handle>test@test.test</diaspora_handle>
-  <first_name>name</first_name>
+  <diaspora_handle>#{data[:diaspora_handle]}</diaspora_handle>
+  <first_name>#{data[:first_name]}</first_name>
   <last_name/>
-  <image_url>/some/image.jpg</image_url>
+  <image_url>#{data[:image_url]}</image_url>
   <image_url_medium/>
   <image_url_small/>
-  <birthday>#{Date.today}</birthday>
-  <gender>something</gender>
-  <bio>i am interesting</bio>
-  <location>Earth</location>
-  <searchable>false</searchable>
-  <nsfw>false</nsfw>
-  <tag_string>#i #love #tags</tag_string>
+  <birthday>#{data[:birthday]}</birthday>
+  <gender>#{data[:gender]}</gender>
+  <bio>#{data[:bio]}</bio>
+  <location>#{data[:location]}</location>
+  <searchable>#{data[:searchable]}</searchable>
+  <nsfw>#{data[:nsfw]}</nsfw>
+  <tag_string>#{data[:tag_string]}</tag_string>
 </profile>
 XML
   }

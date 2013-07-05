@@ -4,11 +4,11 @@ module DiasporaFederation
     # and returns the xml object
     #
     # the wrapper looks like so:
-    # <XML>
-    #   <post>
-    #     {data}
-    #   </post>
-    # </XML>
+    #   <XML>
+    #     <post>
+    #       {data}
+    #     </post>
+    #   </XML>
     #
     # @param [Entity]
     # @return [Ox::Element]

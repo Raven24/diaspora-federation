@@ -6,19 +6,19 @@
 #
 # a Diaspora*-flavored encrypted salmon-enveloped xml message looks like the following:
 #
-# <?xml version='1.0' encoding='UTF-8'?>
-# <diaspora xmlns="https://joindiaspora.com/protocol" xmlns:me="http://salmon-protocol.org/ns/magic-env">
-#   <encrypted_header>{encrypted_header}</encrypted_header>
-#   {magic_envelope with encrypted data}
-# </diaspora>
+#   <?xml version='1.0' encoding='UTF-8'?>
+#   <diaspora xmlns="https://joindiaspora.com/protocol" xmlns:me="http://salmon-protocol.org/ns/magic-env">
+#     <encrypted_header>{encrypted_header}</encrypted_header>
+#     {magic_envelope with encrypted data}
+#   </diaspora>
 #
 #
 # the encrypted header is encoded in JSON like this (when in plain text):
 #
-# {
+#   {
 #   'aes_key' => '...',
 #   'ciphertext' => '...'
-# }
+#   }
 #
 # the 'aes_key' is encrypted using the recipients public key,
 # the ciphertext, once decrypted, contains the 'author_id', 'aes_key' and 'iv'
@@ -27,17 +27,16 @@
 #
 # the decrypted cyphertext has this XML structure:
 #
-# <decrypted_header>
-#   <iv>{iv}</iv>
-#   <aes_key>{aes_key}</aes_key>
-#   <author_id>{author_id}</author_id>
-# </decrypted_header>
+#   <decrypted_header>
+#     <iv>{iv}</iv>
+#     <aes_key>{aes_key}</aes_key>
+#     <author_id>{author_id}</author_id>
+#   </decrypted_header>
 #
 #
 # before finally decrypting the magic envelope payload, the signature should be
 # verified first.
 #
-
 module DiasporaFederation; module Salmon
   class EncryptedSlap
     # @param [String] EncryptedSalmon xml

@@ -47,16 +47,27 @@ module DiasporaFederation
       prop_def = self.class.class_props.detect { |p| p[:name] == name }
       return false if prop_def.nil? # property undefined
 
-      type = prop_def[:type]
-      if  type == String && val.respond_to?(:to_s)
-        true
-      elsif type.respond_to?(:ancestors) && type.ancestors.include?(Entity) && val.is_a?(Entity)
-        true
-      elsif type.instance_of?(Array) && val.instance_of?(Array)
-        val.all? { |v| v.instance_of?(type.first) }
-      else
-        false
-      end
+      return true if setable_string?(prop_def, val) ||
+                     setable_nested?(prop_def, val) ||
+                     setable_multi?(prop_def, val)
+
+      false
+    end
+
+    def setable_string?(definition, val)
+      (definition[:type] == String && val.respond_to?(:to_s))
+    end
+
+    def setable_nested?(definition, val)
+      t = definition[:type]
+      (t.is_a?(Class) && t.ancestors.include?(Entity) && val.is_a?(Entity))
+    end
+
+    def setable_multi?(definition, val)
+      t = definition[:type]
+      (t.instance_of?(Array) &&
+       val.instance_of?(Array) &&
+       val.all? { |v| v.instance_of?(t.first) })
     end
 
     def entity_xml
@@ -68,17 +79,14 @@ module DiasporaFederation
         if type == String
           # create simple node, fill it and append to root
           node = Ox::Element.new(name.to_s)
-          data = self.send(name).to_s
+          data = send(name).to_s
           node << data unless data.empty?
           root_element << node
-        elsif type.instance_of?(Array)
+        else
           # call #to_xml for each item and append to root
-          self.send(name).each do |item|
+          [*send(name)].each do |item|
             root_element << item.to_xml
           end
-        elsif type.ancestors.include?(Entity)
-          # append the nested entity's xml to the root
-          root_element << self.send(name).to_xml
         end
       end
 
