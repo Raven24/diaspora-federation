@@ -5,6 +5,10 @@
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 
+# spec code coverage
+require 'coveralls'
+Coveralls.wear!
+
 require 'diaspora-federation'
 require 'ostruct'
 require 'fabrication'
