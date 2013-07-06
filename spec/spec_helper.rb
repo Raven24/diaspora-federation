@@ -17,6 +17,7 @@ require 'fabricators'
 
 require 'diaspora-federation/entities/shared_entity_specs'
 require 'diaspora-federation/salmon/shared_slap_specs'
+require 'diaspora-federation/validators/shared_validator_specs'
 
 include DiasporaFederation
 

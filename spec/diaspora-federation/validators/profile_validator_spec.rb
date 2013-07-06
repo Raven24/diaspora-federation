@@ -20,18 +20,10 @@ describe Validators::ProfileValidator do
     v.should be_valid
   end
 
-  context '#diaspora_handle' do
-    it 'must not be empty' do
-      v = Validators::ProfileValidator.new(profile_stub(diaspora_handle: ''))
-      v.should_not be_valid
-      v.errors.should include(:diaspora_handle)
-    end
-
-    it 'must resemble an email address' do
-      v = Validators::ProfileValidator.new(profile_stub(diaspora_handle: 'i am a weird handle @@@ ### 12345'))
-      v.should_not be_valid
-      v.errors.should include(:diaspora_handle)
-    end
+  it_behaves_like 'a diaspora_handle validator' do
+    let(:entity) { :profile }
+    let(:validator) { Validators::ProfileValidator }
+    let(:property) { :diaspora_handle }
   end
 
   context '#first_name and #last_name' do

@@ -9,6 +9,19 @@ end
 
 include DiasporaFederation::Entities
 
+Fabricator(:account_deletion) do
+  diaspora_handle { Fabricate.sequence(:diaspora_handle) }
+end
+
+Fabricator(:comment) do
+  guid { Fabricate.sequence(:guid) }
+  parent_guid { Fabricate.sequence(:guid) }
+  parent_author_signature { Fabricate.sequence(:signature) }
+  author_signature { Fabricate.sequence(:signature) }
+  text 'this is a very informative comment'
+  diaspora_handle { Fabricate.sequence(:diaspora_handle) }
+end
+
 Fabricator(:message) do
   guid { Fabricate.sequence(:guid) }
   parent_guid { Fabricate.sequence(:guid) }
