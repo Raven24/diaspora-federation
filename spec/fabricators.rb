@@ -22,6 +22,31 @@ Fabricator(:comment) do
   diaspora_handle { Fabricate.sequence(:diaspora_handle) }
 end
 
+Fabricator(:conversation) do
+  guid { Fabricate.sequence(:guid) }
+  subject 'this is a very informative subject'
+  created_at { DateTime.now }
+  messages []
+  diaspora_handle { Fabricate.sequence(:diaspora_handle) }
+  participant_handles { 3.times.map{ Fabricate.sequence(:diaspora_handle) }.join(';') }
+end
+
+Fabricator(:like) do
+  positive 1
+  guid { Fabricate.sequence(:guid) }
+  target_type 'StatusMessage'
+  parent_guid { Fabricate.sequence(:guid) }
+  parent_author_signature { Fabricate.sequence(:signature) }
+  author_signature { Fabricate.sequence(:signature) }
+  diaspora_handle { Fabricate.sequence(:diaspora_handle) }
+end
+
+Fabricator(:location) do
+  address 'Vienna, Austria'
+  lat 48.208174.to_s
+  lng 16.373819.to_s
+end
+
 Fabricator(:message) do
   guid { Fabricate.sequence(:guid) }
   parent_guid { Fabricate.sequence(:guid) }
@@ -47,12 +72,6 @@ Fabricator(:profile) do
   searchable true
   nsfw false
   tag_string '#i #love #tags'
-end
-
-Fabricator(:location) do
-  address 'Vienna, Austria'
-  lat 48.208174
-  lng 16.373819
 end
 
 Fabricator(:photo) do
