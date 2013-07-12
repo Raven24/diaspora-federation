@@ -80,24 +80,10 @@ describe Validators::ProfileValidator do
 
   context '#searchable and #nsfw' do
     [:searchable, :nsfw].each do |prop|
-      it 'may be a boolean' do
-        [true, 'true', false, 'false'].each do |val|
-          @profile.public_send("#{prop}=", val)
-
-          v = Validators::ProfileValidator.new(@profile)
-          v.should be_valid
-          v.errors.should be_empty
-        end
-      end
-
-      it 'must not be an arbitrary string or other object' do
-        ['asdf', Date.today, 1234].each do |val|
-          @profile.public_send("#{prop}=", val)
-
-          v = Validators::ProfileValidator.new(@profile)
-          v.should_not be_valid
-          v.errors.should include(prop)
-        end
+      it_behaves_like 'a boolean validator' do
+        let(:entity) { :profile }
+        let(:validator) { Validators::ProfileValidator }
+        let(:property) { prop }
       end
     end
   end

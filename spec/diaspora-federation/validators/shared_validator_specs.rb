@@ -51,3 +51,21 @@ shared_examples 'a guid validator' do
     v.errors.should include(property)
   end
 end
+
+shared_examples 'a boolean validator' do
+  it 'validates a well-formed boolean' do
+    [true, 'true', false, 'false'].each do |val|
+      v = validator.new(entity_stub(entity, property, val))
+      v.should be_valid
+      v.errors.should be_empty
+    end
+  end
+
+  it 'must not be an arbitrary string or other object' do
+    ['asdf', Date.today, 1234].each do |val|
+      v = validator.new(entity_stub(entity, property, val))
+      v.should_not be_valid
+      v.errors.should include(property)
+    end
+  end
+end
