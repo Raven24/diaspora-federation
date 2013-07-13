@@ -23,7 +23,7 @@ module DiasporaFederation
     class << self
       # @return [Hash] the hash used to declare the entity properties as returned
       #   by the DSL
-      attr_accessor :class_props
+      attr_reader :class_props
     end
 
     # Initializes the Entity with the given attribute hash and freezes the created

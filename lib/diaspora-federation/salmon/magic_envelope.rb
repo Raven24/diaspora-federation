@@ -37,6 +37,9 @@ module DiasporaFederation; module Salmon
     # digest instance used for signing
     DIGEST = OpenSSL::Digest::SHA256.new
 
+    # XML namespace url
+    XMLNS = 'http://salmon-protocol.org/ns/magic-env'
+
     # Creates a new instance of MagicEnvelope.
     #
     # @param [OpenSSL::PKey::RSA] rsa_pkey private key used for signing

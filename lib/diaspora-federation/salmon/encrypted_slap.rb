@@ -61,7 +61,7 @@ module DiasporaFederation; module Salmon
     def self.from_xml(slap_xml, pkey)
       raise ArgumentError unless slap_xml.instance_of?(String) &&
                                  pkey.instance_of?(OpenSSL::PKey::RSA)
-      doc = Ox.load(Salmon.ensure_xml_prolog(slap_xml), mode: :generic)
+      doc = Ox.load(DiasporaFederation.ensure_xml_prolog(slap_xml), mode: :generic)
       slap = Slap.new
 
       header_elem = doc.locate('diaspora/encrypted_header')
@@ -93,8 +93,8 @@ module DiasporaFederation; module Salmon
       doc = Ox::Document.new(version: '1.0', encoding: 'UTF-8')
 
       root = Ox::Element.new('diaspora')
-      root['xmlns'] = 'https://joindiaspora.com/protocol'
-      root['xmlns:me'] = 'http://salmon-protocol.org/ns/magic-env'
+      root['xmlns'] = DiasporaFederation::XMLNS
+      root['xmlns:me'] = MagicEnvelope::XMLNS
       doc << root
 
       magic_envelope = MagicEnvelope.new(pkey, entity)

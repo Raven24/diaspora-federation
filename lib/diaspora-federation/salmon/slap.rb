@@ -46,7 +46,7 @@ module DiasporaFederation; module Salmon
     # @raise [MissingMagicEnvelope] if the +me:env+ element is missing from the XML
     def self.from_xml(slap_xml)
       raise ArgumentError unless slap_xml.instance_of?(String)
-      doc = Ox.load(Salmon.ensure_xml_prolog(slap_xml), mode: :generic)
+      doc = Ox.load(DiasporaFederation.ensure_xml_prolog(slap_xml), mode: :generic)
       slap = Slap.new
 
       author_elem = doc.locate('diaspora/header/author_id')
@@ -74,8 +74,8 @@ module DiasporaFederation; module Salmon
       doc = Ox::Document.new(version: '1.0', encoding: 'UTF-8')
 
       root = Ox::Element.new('diaspora')
-      root['xmlns'] = 'https://joindiaspora.com/protocol'
-      root['xmlns:me'] = 'http://salmon-protocol.org/ns/magic-env'
+      root['xmlns'] = DiasporaFederation::XMLNS
+      root['xmlns:me'] = MagicEnvelope::XMLNS
       doc << root
 
       header = Ox::Element.new('header')
