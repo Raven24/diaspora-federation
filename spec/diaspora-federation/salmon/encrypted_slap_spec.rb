@@ -5,19 +5,19 @@ describe Salmon::EncryptedSlap do
   let(:pkey) { OpenSSL::PKey::RSA.generate(512) } # use small key for speedy specs
   let(:okey) { OpenSSL::PKey::RSA.generate(1024) } # use small key for speedy specs
   let(:entity) { Entities::TestEntity.new(test: 'qwertzuiop') }
-  let(:slap_xml) { Salmon::EncryptedSlap.to_xml(author_id, pkey, entity, okey.public_key) }
+  let(:slap_xml) { Salmon::EncryptedSlap.generate_xml(author_id, pkey, entity, okey.public_key) }
 
-  context '::to_xml' do
+  context '::generate_xml' do
     context 'sanity' do
       it 'accepts correct params' do
         expect {
-          Salmon::EncryptedSlap.to_xml(author_id, pkey, entity, okey.public_key)
+          Salmon::EncryptedSlap.generate_xml(author_id, pkey, entity, okey.public_key)
         }.not_to raise_error
       end
 
       it 'raises an error when the params are the wrong type' do
         ['asdf', 12345, true, :symbol, entity, pkey].each do |val|
-          expect { Salmon::EncryptedSlap.to_xml(val, val, val, val) }.to raise_error
+          expect { Salmon::EncryptedSlap.generate_xml(val, val, val, val) }.to raise_error
         end
       end
     end

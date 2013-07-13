@@ -1,13 +1,35 @@
 module DiasporaFederation
+
+  # +Entity+ is the base class for all other objects used to encapsulate data
+  # for federation messages in the Diaspora* network.
+  # Entity fields are specified using a simple {PropertiesDSL DSL} as part of
+  # the class definition.
+  #
+  # @example Entity subclass definition
+  #   class MyEntity < Entity
+  #     define_props do
+  #       property :prop
+  #       entity :nested, NestedEntity
+  #       entity :multiple, [OtherEntity]
+  #     end
+  #   end
+  #
+  # Any entity also provides the means to serialize itself and all nested
+  # entities to XML (for deserialization from XML to +Entity+ instances, see
+  # {XmlPayload}).
+  #
+  # @abstract Subclass and specify properties to implement various entities.
   class Entity
     class << self
+      # @return [Hash] the hash used to declare the entity properties as returned
+      #   by the DSL
       attr_accessor :class_props
     end
 
     # Initializes the Entity with the given attribute hash and freezes the created
     # instance it returns.
     #
-    # @note Attributes not defined as part of the class definition {::define_props}
+    # @note Attributes not defined as part of the class definition ({Entity.define_props})
     #       get discarded silently.
     #
     # @param [Hash] data
@@ -21,7 +43,7 @@ module DiasporaFederation
     end
 
     # Returns a Hash representing this Entity (attributes => values)
-    # @return [Hash] data
+    # @return [Hash] entity data (mostly equal to the hash used for initialization).
     def to_h
       out = {}
       self.class.class_prop_names.map do |prop|
@@ -31,7 +53,7 @@ module DiasporaFederation
     end
 
     # Returns the XML representation for this entity constructed out of
-    # Ox::Elements
+    # {Ox::Element}s
     #
     # @see Ox::dump
     # @see XmlPayload::pack
@@ -43,12 +65,13 @@ module DiasporaFederation
 
     # Set the properties for this Entity class using a simple DSL.
     #
-    # @note Only the properties that were specified can be assigned during
-    #       initialization
+    # @note Only the properties that were specified as part of the class definition
+    #   can later be assigned during initialization.
     #
     # @see PropertiesDSL
     #
     # @param [Proc] block
+    # @return [void]
     def self.define_props(&block)
       @class_props = PropertiesDSL.new(&block).get_properties
       instance_eval { attr_reader *@class_props.map { |p| p[:name] } }

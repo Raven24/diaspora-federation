@@ -1,12 +1,14 @@
 module Validation; module Rule
+
+  # Rormat rule for validation using regular expressions
   class Format
 
-    # works with the following params
+    # initialize rule
     #
-    # - :with - regular expression used for matching - OR -
-    # - :without - regexp that should not match
-    # - :allow_blank - boolean for allowing empty strings
-    #
+    # @param [Hash] params rule options
+    # @option params [Regexp] :with regular expression used for matching - OR -
+    # @option params [Regexp] :without regexp that should not match
+    # @option params [Boolean] :allow_blank allow empty strings
     def initialize(params)
       unless params.include?(:with) ^ params.include?(:without)
         raise "Either :with or :without must be specified"

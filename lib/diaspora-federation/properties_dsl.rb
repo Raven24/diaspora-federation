@@ -1,26 +1,31 @@
 module DiasporaFederation
+
+  # Provides a simple DSL for specifying {Entity} properties during class
+  # definition.
+  # @see Entity.define_props
   class PropertiesDSL
-    # this is where the DSL block gets evaluated.
-    # call 'get_properties' on the instance after you're done defining the
-    # properties to get an array of properties in order they were specified
-    # @param [Proc]
+    # This is where the DSL block gets evaluated.
+    # Call {PropertiesDSL#get_properties} on the created instance after you're
+    # done defining the properties to get an array of properties in order they
+    # were specified.
+    # @param [Proc] block will be evaluated in the created instance
     def initialize(&block)
       @properties = []
       instance_eval(&block)
       @properties.freeze
     end
 
-    # define a generic property
-    # @param [Symbol] property name
+    # Define a generic (string-type) property
+    # @param [Symbol] name property name
     def property(name)
       raise InvalidName unless name_valid?(name)
       @properties << { name: name, type: String }
     end
 
-    # define a property that should contain another Entity or an array of
+    # Define a property that should contain another Entity or an array of
     # other Entities
-    # @param [Symbol] property name
-    # @param [mixed] Entity subclass or
+    # @param [Symbol] name property name
+    # @param [Entity, Array<Entity>] type Entity subclass or
     #                Array with exactly one Entity subclass constant inside
     def entity(name, type)
       raise InvalidName unless name_valid?(name)
@@ -28,7 +33,7 @@ module DiasporaFederation
       @properties << { name: name, type: type }
     end
 
-    # returns an array of the previously defined properties, each property is
+    # Returns an array of the previously defined properties, each property is
     # represented as a hash consisting of a name and a type
     # @return [Array<Hash>] e.g. [{ name: Symbol, type: Type}, {...}, ...]
     def get_properties

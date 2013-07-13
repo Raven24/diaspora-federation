@@ -1,10 +1,11 @@
 module Validation; module Rule
+
+  # Rule for validating the number of Diaspora* handles in a string.
+  # The evaluated string is split at ";" and the result will be counted.
   class HandleCount
 
-    # works with the following params
-    #
-    # - :maximum - maximum allowed handle count
-    #
+    # @param [Hash] params
+    # @option params [Fixnum] :maximum maximum allowed handle count
     def initialize(params)
       unless params.include?(:maximum) && params[:maximum].is_a?(Fixnum)
         raise "A number has to be specified for :maximum"

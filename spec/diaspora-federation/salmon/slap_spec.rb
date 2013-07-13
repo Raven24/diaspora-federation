@@ -4,17 +4,17 @@ describe Salmon::Slap do
   let(:author_id) { 'test_user@pod.somedomain.tld' }
   let(:pkey) { OpenSSL::PKey::RSA.generate(512) } # use small key for speedy specs
   let(:entity) { Entities::TestEntity.new(test: 'qwertzuiop') }
-  let(:slap) { Salmon::Slap.to_xml(author_id, pkey, entity) }
+  let(:slap) { Salmon::Slap.generate_xml(author_id, pkey, entity) }
 
-  context '::to_xml' do
+  context '::generate_xml' do
     context 'sanity' do
       it 'accepts correct params' do
-        expect { Salmon::Slap.to_xml(author_id, pkey, entity) }.not_to raise_error
+        expect { Salmon::Slap.generate_xml(author_id, pkey, entity) }.not_to raise_error
       end
 
       it 'raises an error when the params are the wrong type' do
         ['asdf', 12345, true, :symbol, entity, pkey].each do |val|
-          expect { Salmon::Slap.to_xml(val, val, val) }.to raise_error
+          expect { Salmon::Slap.generate_xml(val, val, val) }.to raise_error
         end
       end
     end

@@ -1,12 +1,16 @@
 
 module DiasporaFederation
+
+  # This module contains a Diaspora*-specific implementation of parts of the
+  # {http://www.salmon-protocol.org/ Salmon Protocol}.
   module Salmon
-    # aes cipher definition
+    # OpenSSL aes cipher definition
     AES_CIPHER = 'AES-256-CBC'
 
-    # encrypts the given data with a new AES cipher and returns the resulting
-    # ciphertext, the key and iv (base64 strict_encoded) in a hash
-    # @param [String] input
+    # encrypts the given data with a new, random AES cipher and returns the
+    # resulting ciphertext, the key and iv in a hash (each of the entries
+    # base64 strict_encoded).
+    # @param [String] data plain input
     # @return [Hash] { :key => '...', :iv => '...', :ciphertext => '...' }
     def self.aes_encrypt(data)
       cipher = OpenSSL::Cipher.new(AES_CIPHER)
@@ -24,9 +28,9 @@ module DiasporaFederation
 
     # decrypts the given ciphertext with an AES cipher defined by the given key
     # and iv. parameters are expected to be base64 encoded
-    # @param [String] ciphertext
-    # @param [String] AES key
-    # @param [String] AES initialization vector
+    # @param [String] ciphertext input data
+    # @param [String] key AES key
+    # @param [String] iv AES initialization vector
     # @return [String] decrypted plain message
     def self.aes_decrypt(ciphertext, key, iv)
       dec = [ciphertext, key, iv].map { |i| Base64.decode64(i) }

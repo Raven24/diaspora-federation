@@ -1,47 +1,63 @@
-
-# The basic encryption mechanism used here acts on the knowledge that
-# asymmetrical encryption is slow and symmetrical encryption is fast. Keeping in
-# mind that a message we want to de-/encrypt may greatly vary in length,
-# performance considerations must play a part of this scheme.
-#
-# a Diaspora*-flavored encrypted salmon-enveloped xml message looks like the following:
-#
-#   <?xml version='1.0' encoding='UTF-8'?>
-#   <diaspora xmlns="https://joindiaspora.com/protocol" xmlns:me="http://salmon-protocol.org/ns/magic-env">
-#     <encrypted_header>{encrypted_header}</encrypted_header>
-#     {magic_envelope with encrypted data}
-#   </diaspora>
-#
-#
-# the encrypted header is encoded in JSON like this (when in plain text):
-#
-#   {
-#   'aes_key' => '...',
-#   'ciphertext' => '...'
-#   }
-#
-# the 'aes_key' is encrypted using the recipients public key,
-# the ciphertext, once decrypted, contains the 'author_id', 'aes_key' and 'iv'
-# relevant to decrypting the data in the magic_envelope and verifying its signature
-#
-#
-# the decrypted cyphertext has this XML structure:
-#
-#   <decrypted_header>
-#     <iv>{iv}</iv>
-#     <aes_key>{aes_key}</aes_key>
-#     <author_id>{author_id}</author_id>
-#   </decrypted_header>
-#
-#
-# before finally decrypting the magic envelope payload, the signature should be
-# verified first.
-#
 module DiasporaFederation; module Salmon
+
+  # +EncryptedSlap+ provides class methods for generating and parsing encrypted
+  # Slaps. (In principle the same as  {Slap}, but with encryption.)
+  #
+  # The basic encryption mechanism used here is based on the knowledge that
+  # asymmetrical encryption is slow and symmetrical encryption is fast. Keeping in
+  # mind that a message we want to de-/encrypt may greatly vary in length,
+  # performance considerations must play a part of this scheme.
+  #
+  # A Diaspora*-flavored encrypted magic-enveloped XML message looks like the following:
+  #
+  #   <?xml version='1.0' encoding='UTF-8'?>
+  #   <diaspora xmlns="https://joindiaspora.com/protocol" xmlns:me="http://salmon-protocol.org/ns/magic-env">
+  #     <encrypted_header>{encrypted_header}</encrypted_header>
+  #     {magic_envelope with encrypted data}
+  #   </diaspora>
+  #
+  # The encrypted header is encoded in JSON like this (when in plain text):
+  #
+  #   {
+  #     'aes_key'    => '...',
+  #     'ciphertext' => '...'
+  #   }
+  #
+  # +aes_key+ is encrypted using the recipients public key, and contains the AES
+  # +key+ and +iv+ used to encrypt the +ciphertext+ also encoded as JSON.
+  #
+  #   {
+  #     'key' => '...',
+  #     'iv'  => '...'
+  #   }
+  #
+  # +ciphertext+, once decrypted, contains the +author_id+, +aes_key+ and +iv+
+  # relevant to the decryption of the data in the magic_envelope and the
+  # verification of its signature.
+  #
+  # The decrypted cyphertext has this XML structure:
+  #
+  #   <decrypted_header>
+  #     <iv>{iv}</iv>
+  #     <aes_key>{aes_key}</aes_key>
+  #     <author_id>{author_id}</author_id>
+  #   </decrypted_header>
+  #
+  # Finally, before decrypting the magic envelope payload, the signature should
+  # first be verified.
   class EncryptedSlap
-    # @param [String] EncryptedSalmon xml
-    # @param [OpenSSL::PKey::RSA] recipient private_key for decryption
-    # @return [Slap]
+
+    # Creates a Slap instance from the data within the given XML string
+    # containing an encrypted payload.
+    #
+    # @param [String] slap_xml encrypted Salmon xml
+    # @param [OpenSSL::PKey::RSA] pkey recipient private_key for decryption
+    #
+    # @return [Slap] new Slap instance
+    #
+    # @raise [ArgumentError] if any of the arguments is of the wrong type
+    # @raise [MissingHeader] if the +encrypted_header+ element is missing in the XML
+    # @raise [MissingMagicEnvelope] if the +me:env+ element is missing in the XML
     def self.from_xml(slap_xml, pkey)
       raise ArgumentError unless slap_xml.instance_of?(String) &&
                                  pkey.instance_of?(OpenSSL::PKey::RSA)
@@ -61,12 +77,15 @@ module DiasporaFederation; module Salmon
       slap
     end
 
-    # @param [String] diaspora_handle of the author
-    # @param [OpenSSL::PKey::RSA] sender private_key for signing the magic envelope
-    # @param [Entity]
-    # @param [OpenSSL::PKey::RSA] recipient public_key for encrypting the AES key
-    # @return [String] Salmon XML
-    def self.to_xml(author_id, pkey, entity, pubkey)
+    # Creates an encrypted Salmon Slap and returns the XML string.
+    #
+    # @param [String] author_id Diaspora* handle of the author
+    # @param [OpenSSL::PKey::RSA] pkey sender private key for signing the magic envelope
+    # @param [Entity] entity payload
+    # @param [OpenSSL::PKey::RSA] pubkey recipient public key for encrypting the AES key
+    # @return [String] Salmon XML string
+    # @raise [ArgumentError] if any of the arguments is of the wrong type
+    def self.generate_xml(author_id, pkey, entity, pubkey)
       raise ArgumentError unless author_id.instance_of?(String) &&
                                  pkey.instance_of?(OpenSSL::PKey::RSA) &&
                                  entity.is_a?(Entity) &&

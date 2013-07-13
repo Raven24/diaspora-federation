@@ -1,17 +1,24 @@
 module DiasporaFederation
+
+  # +XmlPayload+ provides methods to wrap a XML-serialized {Entity} inside a
+  # common XML structure that will become the payload for federation messages.
+  #
+  # The wrapper looks like so:
+  #   <XML>
+  #     <post>
+  #       {data}
+  #     </post>
+  #   </XML>
+  #
+  # (The +post+ element is there for historic reasons...)
   class XmlPayload
+
     # Encapsulates an Entity inside the wrapping xml structure
     # and returns the XML Object.
     #
-    # the wrapper looks like so:
-    #   <XML>
-    #     <post>
-    #       {data}
-    #     </post>
-    #   </XML>
-    #
-    # @param [Entity] subject
+    # @param [Entity] entity subject
     # @return [Ox::Element] XML root node
+    # @raise [ArgumentError] if the argument is not an Entity subclass
     def self.pack(entity)
       raise ArgumentError unless entity.is_a?(Entity)
 
@@ -23,11 +30,16 @@ module DiasporaFederation
       wrap
     end
 
-    # Extracts the Entity XML from the wrapping XML structure and returns the
-    # Entity that was packed inside the payload.
+    # Extracts the Entity XML from the wrapping XML structure, parses the entity
+    # XML and returns a new instance of the Entity that was packed inside the
+    # given payload.
     #
-    # @param [Ox::Element] XML root node
+    # @param [Ox::Element] xml payload XML root node
     # @return [Entity] re-constructed Entity instance
+    # @raise [ArgumentError] if the argument is not an {Ox::Element}
+    # @raise [InvalidStructure] if the XML doesn't look like the wrapper XML
+    # @raise [UnknownEntity] if the class for the entity contained inside the
+    #   XML can't be found
     def self.unpack(xml)
       raise ArgumentError unless xml.instance_of?(Ox::Element)
       raise InvalidStructure unless wrap_valid?(xml)

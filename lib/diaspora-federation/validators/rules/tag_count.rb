@@ -1,10 +1,11 @@
 module Validation; module Rule
+
+  # Rule for validating the number of tags in a string.
+  # Only the "#" characters will be counted.
   class TagCount
 
-    # works with the following params
-    #
-    # - :maximum - maximum allowed tag count
-    #
+    # @param [Hash] params
+    # @option params [Fixnum] :maximum maximum allowed tag count
     def initialize(params)
       unless params.include?(:maximum) && params[:maximum].is_a?(Fixnum)
         raise "A number has to be specified for :maximum"

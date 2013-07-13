@@ -3,6 +3,14 @@ require 'validation/rule/not_empty'
 require 'validation/rule/length'
 require 'validation/rule/email'
 
+# This module contains custom validation rules for various data field types.
+# That includes types for which there are no provided rules by the +valid+ gem
+# or types that are very specific to Diaspora* federation and need special handling.
+# The rules are used inside the {DiasporaFederation::Validators validator classes}
+# to perform basic santity-checks on {DiasporaFederation::Entities federation entities}.
+module Validation::Rule
+end
+
 require 'diaspora-federation/validators/rules/birthday'
 require 'diaspora-federation/validators/rules/boolean'
 require 'diaspora-federation/validators/rules/format'

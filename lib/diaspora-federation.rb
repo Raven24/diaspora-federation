@@ -6,6 +6,10 @@ require 'base64'
 require 'openssl'
 require 'json'
 
+# This is the main namespace used throughout this gem.
+module DiasporaFederation
+end
+
 require 'diaspora-federation/validators'
 require 'diaspora-federation/properties_dsl'
 require 'diaspora-federation/entity'

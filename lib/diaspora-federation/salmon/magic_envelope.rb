@@ -1,18 +1,28 @@
 
-# a magic envelope for Diaspora* appears like so:
-#
-#  <me:env>
-#    <me:data type='application/xml'>{data}</me:data>
-#    <me:encoding>base64url</me:encoding>
-#    <me:alg>RSA-SHA256</me:alg>
-#    <me:sig>{signature}</me:sig>
-#  </me:env>
-#
-# for details, see: http://www.salmon-protocol.org/
-# and: http://salmon-protocol.googlecode.com/svn/trunk/draft-panzer-magicsig-01.html
-
 module DiasporaFederation; module Salmon
+
+  # Represents a Magic Envelope for Diaspora* federation messages.
+  #
+  # When generating a Magic Envelope, an instance of this class is created and
+  # the contents are specified on initialization. Optionally, the payload can be
+  # encrypted ({MagicEnvelope#encrypt!}), before the XML is returned
+  # ({MagicEnvelope#envelop}).
+  #
+  # The generated XML appears like so:
+  #
+  #   <me:env>
+  #     <me:data type='application/xml'>{data}</me:data>
+  #     <me:encoding>base64url</me:encoding>
+  #     <me:alg>RSA-SHA256</me:alg>
+  #     <me:sig>{signature}</me:sig>
+  #   </me:env>
+  #
+  # When parsing the XML of an incoming Magic Envelope {MagicEnvelope.unenvelop}
+  # is used.
+  #
+  # @see http://salmon-protocol.googlecode.com/svn/trunk/draft-panzer-magicsig-01.html
   class MagicEnvelope
+    # returns the payload (only used for testing purposes)
     attr_reader :payload
 
     # encoding used for the payload data
@@ -27,8 +37,11 @@ module DiasporaFederation; module Salmon
     # digest instance used for signing
     DIGEST = OpenSSL::Digest::SHA256.new
 
-    # @param [OpenSSL::PKey::RSA]
-    # @param [Entity]
+    # Creates a new instance of MagicEnvelope.
+    #
+    # @param [OpenSSL::PKey::RSA] rsa_pkey private key used for signing
+    # @param [Entity] payload Entity instance
+    # @raise [ArgumentError] if either argument is not of the right type
     def initialize(rsa_pkey, payload)
       raise ArgumentError unless rsa_pkey.instance_of?(OpenSSL::PKey::RSA) &&
                                  payload.is_a?(Entity)
@@ -37,8 +50,10 @@ module DiasporaFederation; module Salmon
       @payload = Ox.dump(XmlPayload.pack(payload)).strip
     end
 
-    # builds the xml structure for the magic envelope
-    # @return [Ox::Element]
+    # Builds the XML structure for the magic envelope, inserts the {ENCODING}
+    # encoded data and signs the envelope using {DIGEST}.
+    #
+    # @return [Ox::Element] XML root node
     def envelop
       env = Ox::Element.new('me:env')
 
@@ -62,8 +77,15 @@ module DiasporaFederation; module Salmon
       env
     end
 
-    # encrypts the payload with a new AES cipher and returns the cipher params
-    # @return [Hash] { key: '...', iv: '...' }
+    # Encrypts the payload with a new, random AES cipher and returns the cipher
+    # params that were used.
+    #
+    # This must happen after the MagicEnvelope instance was created and before
+    # {MagicEnvelope#envelop} is called.
+    #
+    # @see Salmon.aes_encrypt
+    #
+    # @return [Hash] AES key and iv. E.g.: { key: '...', iv: '...' }
     def encrypt!
       encryption_data = Salmon.aes_encrypt(@payload)
       @payload = encryption_data[:ciphertext]
@@ -71,12 +93,26 @@ module DiasporaFederation; module Salmon
       { key: encryption_data[:key], iv: encryption_data[:iv] }
     end
 
-    # extracts the entity encoded in the magic envelope data
-    # does some sanity checking to avoid bad surprises
-    # @param [Ox::Element]
-    # @param [OpenSSL::PKey::RSA] public_key to verify the signature
-    # @param [Hash] { iv: '...', key: '...' } for decrypting previously encrypted data
-    # @return [Entity]
+    # Extracts the entity encoded in the magic envelope data, if the signature
+    # is valid. If +cipher_params+ is given, also attempts to decrypt the payload first.
+    #
+    # Does some sanity checking to avoid bad surprises...
+    #
+    # @see XmlPayload.unpack
+    # @see Salmon.aes_decrypt
+    #
+    # @param [Ox::Element] magic_env XML root node of a magic envelope
+    # @param [OpenSSL::PKey::RSA] rsa_pubkey public key to verify the signature
+    # @param [Hash] cipher_params hash containing the key and iv for
+    #   AES-decrypting previously encrypted data. E.g.: { iv: '...', key: '...' }
+    #
+    # @return [Entity] reconstructed entity instance
+    #
+    # @raise [ArgumentError] if any of the arguments is of invalid type
+    # @raise [InvalidEnvelope] if the envelope XML structure is malformed
+    # @raise [InvalidSignature] if the signature can't be verified
+    # @raise [InvalidEncoding] if the data is wrongly encoded
+    # @raise [InvalidAlgorithm] if the algorithm used doesn't match
     def self.unenvelop(magic_env, rsa_pubkey, cipher_params=nil)
       raise ArgumentError unless rsa_pubkey.instance_of?(OpenSSL::PKey::RSA) &&
                                  magic_env.instance_of?(Ox::Element)
