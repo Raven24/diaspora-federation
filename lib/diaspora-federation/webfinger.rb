@@ -1,6 +1,6 @@
 
 # This module provides the namespace for the various classes implementing
-# Web Finger and other protocols used for metadata discovery on remote servers
+# WebFinger and other protocols used for metadata discovery on remote servers
 # in the Diaspora* network.
 module DiasporaFederation::WebFinger
 end

@@ -3,14 +3,27 @@ module DiasporaFederation; module WebFinger
 
   # Generates and parses Host Meta documents.
   #
-  # This is a minimal implementation of the standard, to only what is used
-  # for the purposes of the Diaspora* protocol.
+  # This is a minimal implementation of the standard, only to the degree of what
+  # is used for the purposes of the Diaspora* protocol.
   #
   # @see http://tools.ietf.org/html/rfc6415 RFC 6415: "Web Host Metadata"
   # @see XrdDocument
   class HostMeta
 
-    attr_writer :data
+    # Creates a new instance of HostMeta.
+    #
+    # If a this object should be used to create a Host Meta document, simply call
+    # without parameters. If this class is instantiated from an existing Host
+    # Meta document, a block must be passed, setting the +@data+ instance variable.
+    #
+    # @param [Proc] block used to initialize an instance from an existing Host
+    #   Meta document
+    def initialize(&block)
+      if block_given?
+        instance_eval &block
+        freeze
+      end
+    end
 
     # @param [String] value WebFinger base URL, gets appended with
     #   +webfinger?q={uri}+ to construct the template URI
@@ -59,10 +72,9 @@ module DiasporaFederation; module WebFinger
     # for later use
     # @param [String] hostmeta_xml Host Meta XML string
     def self.from_xml(hostmeta_xml)
-      hm = HostMeta.new
-      hm.data = XrdDocument.xml_data(hostmeta_xml)
-
-      hm
+      HostMeta.new do
+        @data = XrdDocument.xml_data(hostmeta_xml)
+      end
     end
 
     # specific errors
