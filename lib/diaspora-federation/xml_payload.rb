@@ -16,6 +16,8 @@ module DiasporaFederation
     # Encapsulates an Entity inside the wrapping xml structure
     # and returns the XML Object.
     #
+    # @api private
+    #
     # @param [Entity] entity subject
     # @return [Ox::Element] XML root node
     # @raise [ArgumentError] if the argument is not an Entity subclass
@@ -33,6 +35,8 @@ module DiasporaFederation
     # Extracts the Entity XML from the wrapping XML structure, parses the entity
     # XML and returns a new instance of the Entity that was packed inside the
     # given payload.
+    #
+    # @api private
     #
     # @param [Ox::Element] xml payload XML root node
     # @return [Entity] re-constructed Entity instance

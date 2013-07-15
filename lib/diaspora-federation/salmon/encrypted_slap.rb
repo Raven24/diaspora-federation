@@ -45,6 +45,22 @@ module DiasporaFederation; module Salmon
   #
   # Finally, before decrypting the magic envelope payload, the signature should
   # first be verified.
+  #
+  # @example Generating an encrypted Salmon Slap
+  #   author = 'author@pod.example.tld'
+  #   author_privkey = however_you_retrieve_the_authors_private_key(author)
+  #   recipient_pubkey = however_you_retrieve_the_recipients_public_key()
+  #   entity = YourEntity.new({ attr: 'val' })
+  #
+  #   slap_xml = EncryptedSlap.generate_xml(author, author_privkey, entity, recipient_pubkey)
+  #
+  # @example Parsing a Salmon Slap
+  #   recipient_privkey = however_you_retrieve_the_recipients_private_key()
+  #   slap = EncryptedSlap.from_xml(slap_xml, recipient_privkey)
+  #   author_pubkey = however_you_retrieve_the_authors_public_key(slap.author_id)
+  #
+  #   entity = slap.entity(author_pubkey)
+  #
   class EncryptedSlap
 
     # Creates a Slap instance from the data within the given XML string

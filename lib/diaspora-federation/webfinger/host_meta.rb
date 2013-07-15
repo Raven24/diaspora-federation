@@ -4,7 +4,18 @@ module DiasporaFederation; module WebFinger
   # Generates and parses Host Meta documents.
   #
   # This is a minimal implementation of the standard, only to the degree of what
-  # is used for the purposes of the Diaspora* protocol.
+  # is used for the purposes of the Diaspora* protocol. (e.g. WebFinger)
+  #
+  # @example Creating a Host Meta document
+  #   doc = HostMeta.new
+  #   doc.webfinger_base_url = 'https://pod.example.tld/'
+  #
+  #   doc.to_xml
+  #
+  # @example Parsing a Host Meta document
+  #   doc = HostMeta.from_xml(xml_string)
+  #
+  #   webfinger_url = doc.webfinger_url
   #
   # @see http://tools.ietf.org/html/rfc6415 RFC 6415: "Web Host Metadata"
   # @see XrdDocument

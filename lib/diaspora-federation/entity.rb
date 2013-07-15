@@ -5,6 +5,12 @@ module DiasporaFederation
   # Entity fields are specified using a simple {PropertiesDSL DSL} as part of
   # the class definition.
   #
+  # Any entity also provides the means to serialize itself and all nested
+  # entities to XML (for deserialization from XML to +Entity+ instances, see
+  # {XmlPayload}).
+  #
+  # @abstract Subclass and specify properties to implement various entities.
+  #
   # @example Entity subclass definition
   #   class MyEntity < Entity
   #     define_props do
@@ -14,11 +20,18 @@ module DiasporaFederation
   #     end
   #   end
   #
-  # Any entity also provides the means to serialize itself and all nested
-  # entities to XML (for deserialization from XML to +Entity+ instances, see
-  # {XmlPayload}).
+  # @example Entity instantiation
+  #   nentity = NestedEntity.new
+  #   oe1 = OtherEntity.new
+  #   oe2 = OtherEntity.new
   #
-  # @abstract Subclass and specify properties to implement various entities.
+  #   entity = MyEntity.new({ prop: 'some property',
+  #                           nested: nentity,
+  #                           multiple: [oe1, oe2] })
+  #
+  # @note Entity properties can only be set during initialization, after that the
+  #   entity instance becomes frozen and must not be modified anymore. Instances
+  #   are intended to be immutable data containers, only.
   class Entity
     class << self
       # @return [Hash] the hash used to declare the entity properties as returned
@@ -55,8 +68,8 @@ module DiasporaFederation
     # Returns the XML representation for this entity constructed out of
     # {Ox::Element}s
     #
-    # @see Ox::dump
-    # @see XmlPayload::pack
+    # @see Ox.dump
+    # @see XmlPayload.pack
     #
     # @return [Ox::Element] root element containing properties as child elements
     def to_xml

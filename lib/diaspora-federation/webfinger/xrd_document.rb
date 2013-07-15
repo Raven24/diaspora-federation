@@ -5,9 +5,25 @@ module DiasporaFederation; module WebFinger
   # necessary in the context of the protocols used with Diaspora* federation.
   #
   # @note Implementing +XrdDocument#to_json+ and +XrdDocument.json_data+ should
-  #   be almost trivial. See
+  #   be almost trivial due to the simplicity of the format and the way the data
+  #   is stored internally already. See
   #   {http://tools.ietf.org/html/rfc6415#appendix-A RFC 6415, Appendix A}
   #   for a description of the JSON format.
+  #
+  # @example Creating a XrdDocument
+  #   doc = XrdDocument.new
+  #   doc.expires = DateTime.new(2020, 1, 15, 0, 0, 1)
+  #   doc.subject = 'http://example.tld/articles/11''
+  #   doc.aliases << 'http://example.tld/cool_article'
+  #   doc.aliases << 'http://example.tld/authors/2/articles/3'
+  #   doc.properties['http://x.example.tld/ns/version'] = '1.3'
+  #   doc.links << { rel: 'author', type: 'text/html', href: 'http://example.tld/authors/2' }
+  #   doc.links << { rel: 'copyright', template: 'http://example.tld/copyright?id={uri}' }
+  #
+  #   doc.to_xml
+  #
+  # @example Parsing a XrdDocument
+  #   data = XrdDocument.xml_data(xml_string)
   #
   # @see http://docs.oasis-open.org/xri/xrd/v1.0/xrd-1.0.html Extensible Resource Descriptor (XRD) Version 1.0
   class XrdDocument
@@ -66,14 +82,14 @@ module DiasporaFederation; module WebFinger
         next if !a.instance_of?(String) || a.empty?
 
         elem = Ox::Element.new('Alias')
-        elem << a
+        elem << a.to_s
         root << elem
       end
 
       @properties.each do |type, val|
         elem = Ox::Element.new('Property')
         elem['type'] = type
-        elem << val unless val.nil? || val.empty?
+        elem << val.to_s unless val.nil? || val.empty?
         root << elem
       end
 
@@ -96,7 +112,7 @@ module DiasporaFederation; module WebFinger
     #
     # @param [String] xrd_doc XML string
     # @return [Hash] extracted data
-    # @raise [InvalidDocument] if the XRD is invalid
+    # @raise [InvalidDocument] if the XRD is malformed
     def self.xml_data(xrd_doc)
       raise ArgumentError unless xrd_doc.instance_of?(String)
 

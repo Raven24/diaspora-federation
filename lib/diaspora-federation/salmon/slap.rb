@@ -14,6 +14,19 @@ module DiasporaFederation; module Salmon
   #     {magic_envelope}
   #   </diaspora>
   #
+  # @example Generating a Salmon Slap
+  #   author = 'author@pod.example.tld'
+  #   author_privkey = however_you_retrieve_the_authors_private_key(author)
+  #   entity = YourEntity.new({ attr: 'val' })
+  #
+  #   slap_xml = Slap.generate_xml(author, author_privkey, entity)
+  #
+  # @example Parsing a Salmon Slap
+  #   slap = Slap.from_xml(slap_xml)
+  #   author_pubkey = however_you_retrieve_the_authors_public_key(slap.author_id)
+  #
+  #   entity = slap.entity(author_pubkey)
+  #
   class Slap
     attr_accessor :author_id, :magic_envelope, :cipher_params
 
