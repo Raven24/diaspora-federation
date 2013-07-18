@@ -177,7 +177,6 @@ module DiasporaFederation; module Salmon
     def self.sig_subject(data_arr)
       data_arr.map { |i| Base64.urlsafe_encode64(i) }.join('.')
     end
-    private_class_method :sig_subject
 
     # Raised, if the Magic Envelope XML structure is malformed.
     class InvalidEnvelope < RuntimeError
