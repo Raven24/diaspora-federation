@@ -7,93 +7,80 @@ module DiasporaFederation; module WebFinger
   # is used for the purposes of the Diaspora* protocol. (e.g. WebFinger)
   #
   # @example Creating a Host Meta document
-  #   doc = HostMeta.new
-  #   doc.webfinger_base_url = 'https://pod.example.tld/'
-  #
+  #   doc = HostMeta.from_base_url('https://pod.example.tld/')
   #   doc.to_xml
   #
   # @example Parsing a Host Meta document
   #   doc = HostMeta.from_xml(xml_string)
-  #
-  #   webfinger_url = doc.webfinger_url
+  #   webfinger_tpl = doc.webfinger_template_url
   #
   # @see http://tools.ietf.org/html/rfc6415 RFC 6415: "Web Host Metadata"
   # @see XrdDocument
   class HostMeta
 
-    # Creates a new instance of HostMeta.
-    #
-    # If a this object should be used to create a Host Meta document, simply call
-    # without parameters. If this class is instantiated from an existing Host
-    # Meta document, a block must be passed, setting the +@data+ instance variable.
-    #
-    # @param [Proc] block used to initialize an instance from an existing Host
-    #   Meta document
-    def initialize(&block)
-      if block_given?
-        instance_eval &block
-        freeze
-      end
+    WEBFINGER_SUFFIX = 'webfinger?q={uri}'
+
+    # Returns the WebFinger URL that was used to build this instance (either from
+    # xml or by giving a base URL).
+    # @return [String] WebFinger template URL
+    def webfinger_template_url
+      @webfinger_url
     end
 
-    # @param [String] value WebFinger base URL, gets appended with
-    #   +webfinger?q={uri}+ to construct the template URI
-    # @raise [ArgumentError] if the given argument is not a String
-    def webfinger_base_url=(value)
-      raise ArgumentError unless value.instance_of?(String)
-
-      value += '/' unless value.end_with?('/')
-      @webfinger_base_url = value
-    end
-
-    # Returns the WebFinger URL that was contained in a previously parsed Host
-    # Meta document.
-    #
-    # @return [String] WebFinger URL
-    # @raise [ImproperInvocation] if no Host Meta document was parsed by this
-    #   instance.
-    # @raise [InsufficientData] if there was no webfinger URL contained in the
-    #   parsed document
-    def webfinger_url
-      raise ImproperInvocation if @data.nil?
-      raise InsufficientData unless @data.key?(:links)
-
-      link = @data[:links].detect { |l| (l[:rel] == 'lrdd' && l[:type] == 'application/xrd+xml') }
-      raise InsufficientData if link.nil?
-
-      link[:template]
-    end
-
-    # Produces the XML string for the Host Meta instance with the
-    # +webfinger_base_url+ set.
-    #
+    # Produces the XML string for the Host Meta instance with a +Link+ element
+    # containing the +webfinger_url+.
     # @return [String] XML string
-    # @raise [InsufficientData] if the +webfinger_base_url+ is nil or empty
     def to_xml
-      raise InsufficientData if @webfinger_base_url.nil? || @webfinger_base_url.empty?
-
       doc = XrdDocument.new
       doc.links << { rel: 'lrdd',
                      type: 'application/xrd+xml',
-                     template: @webfinger_base_url + 'webfinger?q={uri}' }
+                     template: @webfinger_url }
       doc.to_xml
     end
 
-    # Reads the Host Meta XML document and saves the contained data internally
-    # for later use
+    # Builds a new HostMeta instance and constructs the WebFinger URL from the
+    # given base URL by appending HostMeta::WEBFINGER_SUFFIX.
+    # @return [HostMeta]
+    def self.from_base_url(base_url)
+      raise ArgumentError unless base_url.instance_of?(String)
+
+      base_url += '/' unless base_url.end_with?('/')
+      webfinger_url = base_url + WEBFINGER_SUFFIX
+      raise InvalidData unless webfinger_url_valid?(webfinger_url)
+
+      hm = self.allocate
+      hm.instance_variable_set(:@webfinger_url, webfinger_url)
+      hm
+    end
+
+    # Reads the given Host Meta XML document string and populates the
+    # +webfinger_url+.
     # @param [String] hostmeta_xml Host Meta XML string
     def self.from_xml(hostmeta_xml)
-      HostMeta.new do
-        @data = XrdDocument.xml_data(hostmeta_xml)
-      end
+      data = XrdDocument.xml_data(hostmeta_xml)
+      raise InvalidData unless data.key?(:links)
+
+      link = data[:links].detect { |l| (l[:rel] == 'lrdd' && l[:type] == 'application/xrd+xml') }
+      raise InvalidData if link.nil? || !webfinger_url_valid?(link[:template])
+
+      hm = self.allocate
+      hm.instance_variable_set(:@webfinger_url, link[:template])
+      hm
+    end
+
+    private
+
+    def self.webfinger_url_valid?(url)
+      ( !url.nil? && url.instance_of?(String) && !url.empty? &&
+        url =~ /^https?:\/\//i && url.end_with?(WEBFINGER_SUFFIX) )
+    end
+
+    def self.new
     end
 
     # specific errors
 
-    class InsufficientData < RuntimeError
-    end
-
-    class ImproperInvocation < RuntimeError
+    class InvalidData < RuntimeError
     end
   end
 end; end

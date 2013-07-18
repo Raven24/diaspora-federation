@@ -33,44 +33,37 @@ XML
 
   context '#to_xml' do
     it 'creates a nice XML document' do
-      hm = WebFinger::HostMeta.new
-      hm.webfinger_base_url = base_url
-
+      hm = WebFinger::HostMeta.from_base_url(base_url)
       hm.to_xml.should eql(xml)
     end
 
     it 'appends a "/" if necessary' do
-      hm = WebFinger::HostMeta.new
-      hm.webfinger_base_url = 'https://pod.example.tld'
-
+      hm = WebFinger::HostMeta.from_base_url('https://pod.example.tld')
       hm.to_xml.should eql(xml)
     end
 
-    it 'fails if the webfinger_base_url was omitted' do
-      hm = WebFinger::HostMeta.new
-      expect { hm.to_xml }.to raise_error(WebFinger::HostMeta::InsufficientData)
+    it 'fails if the base_url was omitted' do
+      expect { WebFinger::HostMeta.from_base_url('') }.to raise_error(WebFinger::HostMeta::InvalidData)
     end
   end
 
   context '#webfinger_url' do
     it 'parses its own output' do
       h = WebFinger::HostMeta.from_xml(xml)
-      h.webfinger_url.should eql("#{base_url}webfinger?q={uri}")
+      h.webfinger_template_url.should eql("#{base_url}webfinger?q={uri}")
     end
 
     it 'also reads old-style XML' do
       h = WebFinger::HostMeta.from_xml(historic_xml)
-      h.webfinger_url.should eql("#{base_url}webfinger?q={uri}")
+      h.webfinger_template_url.should eql("#{base_url}webfinger?q={uri}")
     end
 
     it 'fails if the document does not contain a webfinger url' do
-      h = WebFinger::HostMeta.from_xml(invalid_xml)
-      expect { h.webfinger_url }.to raise_error(WebFinger::HostMeta::InsufficientData)
+      expect { WebFinger::HostMeta.from_xml(invalid_xml) }.to raise_error(WebFinger::HostMeta::InvalidData)
     end
 
-    it 'fails if no document was parsed before' do
-      h = WebFinger::HostMeta.new
-      expect { h.webfinger_url }.to raise_error(WebFinger::HostMeta::ImproperInvocation)
+    it 'fails if the document is invalid' do
+      expect { WebFinger::HostMeta.from_xml('') }.to raise_error(WebFinger::XrdDocument::InvalidDocument)
     end
   end
 end
