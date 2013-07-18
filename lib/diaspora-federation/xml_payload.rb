@@ -63,6 +63,7 @@ module DiasporaFederation
       (element.name == 'XML' && element.nodes[0] &&
       element.nodes[0].name == 'post' && element.nodes[0].nodes[0])
     end
+    private_class_method :wrap_valid?
 
     # Transform the given String from the lowercase underscored version to a
     # camelized variant, used later for getting the Class constant.
@@ -76,6 +77,7 @@ module DiasporaFederation
       string = string.sub(/^[a-z\d]*/) { $&.capitalize }
       string.gsub(/(?:_|(\/))([a-z\d]*)/i) { $2.capitalize }.gsub('/', '::')
     end
+    private_class_method :entity_class
 
     # Construct a new instance of the given Entity and populate the properties
     # with the attributes found in the XML.
@@ -110,12 +112,15 @@ module DiasporaFederation
 
       klass.new(data)
     end
+    private_class_method :populate_entity
 
-    # specific errors
-
+    # Raised, if the XML structure of the parsed document doesn't resemble the
+    # expected structure.
     class InvalidStructure < RuntimeError
     end
 
+    # Raised, if the entity contained within the XML cannot be mapped to a
+    # defined {Entity} subclass.
     class UnknownEntity < RuntimeError
     end
   end

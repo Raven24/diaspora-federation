@@ -31,6 +31,10 @@ XML
 XML
   }
 
+  it 'must not create blank instances' do
+    expect { WebFinger::HostMeta.new }.to raise_error
+  end
+
   context '#to_xml' do
     it 'creates a nice XML document' do
       hm = WebFinger::HostMeta.from_base_url(base_url)

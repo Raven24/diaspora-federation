@@ -155,6 +155,7 @@ module DiasporaFederation; module Salmon
         !env.locate('me:alg').empty? &&
         !env.locate('me:sig').empty?)
     end
+    private_class_method :envelope_valid?
 
     # @param [Ox::Element]
     # @param [OpenSSL::PKey::RSA] public_key
@@ -167,6 +168,7 @@ module DiasporaFederation; module Salmon
       sig = Base64.urlsafe_decode64(env.locate('me:sig').first.text)
       pkey.verify(DIGEST, sig, subject)
     end
+    private_class_method :signature_valid?
 
     # constructs the signature subject.
     # the given array should consist of the data, data_type (mimetype), encoding
@@ -175,18 +177,22 @@ module DiasporaFederation; module Salmon
     def self.sig_subject(data_arr)
       data_arr.map { |i| Base64.urlsafe_encode64(i) }.join('.')
     end
+    private_class_method :sig_subject
 
-    # specific errors
-
+    # Raised, if the Magic Envelope XML structure is malformed.
     class InvalidEnvelope < RuntimeError
     end
 
+    # Raised, if the calculated signature doesn't match the one contained in the
+    # Magic Envelope.
     class InvalidSignature < RuntimeError
     end
 
+    # Raised, if the parsed Magic Envelope specifies an unhandled algorithm.
     class InvalidAlgorithm < RuntimeError
     end
 
+    # Raised, if the parsed Magic Envelope specifies an unhandled encoding.
     class InvalidEncoding < RuntimeError
     end
   end

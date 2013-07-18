@@ -55,11 +55,11 @@ module DiasporaFederation
         type.ancestors.include?(Entity)))
     end
 
-    # specific errors
-
+    # Raised, if the name is of an unexpected type
     class InvalidName < RuntimeError
     end
 
+    # Raised, if the type is of an unexpected type
     class InvalidType < RuntimeError
     end
   end

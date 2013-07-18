@@ -104,10 +104,7 @@ module DiasporaFederation; module Salmon
       Ox.dump(doc, with_xml: true)
     end
 
-    private
-
-    # specific errors
-
+    # Raised, if the element containing the author is empty.
     class MissingAuthor < RuntimeError
     end
   end

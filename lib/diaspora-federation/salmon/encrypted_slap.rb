@@ -123,8 +123,6 @@ module DiasporaFederation; module Salmon
       Ox.dump(doc, with_xml: true)
     end
 
-    private
-
     # decrypts and reads the data from the encrypted XML header
     # @param [String] base64 encoded, encrypted header data
     # @param [OpenSSL::PKey::RSA] private_key for decryption
@@ -139,6 +137,7 @@ module DiasporaFederation; module Salmon
 
       { iv: iv, aes_key: key, author_id: author }
     end
+    private_class_method :header_data
 
     # decrypts the xml header
     # @param [String] base64 encoded, encrypted header data
@@ -153,6 +152,7 @@ module DiasporaFederation; module Salmon
                                header_key['iv'])
       Ox.load(xml, mode: :generic)
     end
+    private_class_method :decrypt_header
 
     # encrypt the header xml with an AES cipher and encrypt the cipher params
     # with the recipients public_key
@@ -172,6 +172,7 @@ module DiasporaFederation; module Salmon
       header << Base64.strict_encode64(json_header)
       header
     end
+    private_class_method :encrypted_header
 
     # generate the header xml string, including the author, aes_key and iv
     # @param [String] diaspora_handle of the author
@@ -193,14 +194,13 @@ module DiasporaFederation; module Salmon
 
       Ox.dump(header).strip
     end
+    private_class_method :header_xml
 
-    private
-
-    # specific errors
-
+    # Raised, if the element containing the header is missing from the XML
     class MissingHeader < RuntimeError
     end
 
+    # Raised if the decrypted header has an unexpected XML structure
     class InvalidHeader < RuntimeError
     end
 

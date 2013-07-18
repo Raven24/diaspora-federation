@@ -44,10 +44,7 @@ module DiasporaFederation
       plain
     end
 
-    private
-
-    # specific errors
-
+    # Raised, if the element containing the Magic Envelope is missing from the XML
     class MissingMagicEnvelope < RuntimeError
     end
   end

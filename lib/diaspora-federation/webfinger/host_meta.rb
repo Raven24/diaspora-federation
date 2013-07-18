@@ -18,6 +18,9 @@ module DiasporaFederation; module WebFinger
   # @see XrdDocument
   class HostMeta
 
+    private_class_method :new
+
+    # URL fragment to append to the base URL
     WEBFINGER_SUFFIX = 'webfinger?q={uri}'
 
     # Returns the WebFinger URL that was used to build this instance (either from
@@ -68,18 +71,17 @@ module DiasporaFederation; module WebFinger
       hm
     end
 
-    private
-
+    # Applies some basic sanity-checking to the given URL
+    # @param [String] url validation subject
+    # @return [boolean] validation result
     def self.webfinger_url_valid?(url)
       ( !url.nil? && url.instance_of?(String) && !url.empty? &&
         url =~ /^https?:\/\//i && url.end_with?(WEBFINGER_SUFFIX) )
     end
+    private_class_method :webfinger_url_valid?
 
-    def self.new
-    end
 
-    # specific errors
-
+    # Raised, if the +webfinger_url+ is missing or malformed
     class InvalidData < RuntimeError
     end
   end

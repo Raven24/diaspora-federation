@@ -156,8 +156,7 @@ module DiasporaFederation; module WebFinger
       data
     end
 
-    # specific errors
-
+    # Raised, if the XML structure is invalid
     class InvalidDocument < RuntimeError
     end
 
