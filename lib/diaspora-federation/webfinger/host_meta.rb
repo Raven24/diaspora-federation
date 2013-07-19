@@ -73,7 +73,7 @@ module DiasporaFederation; module WebFinger
 
     # Applies some basic sanity-checking to the given URL
     # @param [String] url validation subject
-    # @return [boolean] validation result
+    # @return [Boolean] validation result
     def self.webfinger_url_valid?(url)
       ( !url.nil? && url.instance_of?(String) && !url.empty? &&
         url =~ /^https?:\/\//i && url.end_with?(WEBFINGER_SUFFIX) )

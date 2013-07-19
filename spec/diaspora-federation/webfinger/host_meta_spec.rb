@@ -51,7 +51,7 @@ XML
     end
   end
 
-  context '#webfinger_url' do
+  context '#webfinger_template_url' do
     it 'parses its own output' do
       h = WebFinger::HostMeta.from_xml(xml)
       h.webfinger_template_url.should eql("#{base_url}webfinger?q={uri}")
