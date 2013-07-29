@@ -8,3 +8,4 @@ end
 require 'diaspora-federation/webfinger/xrd_document'
 require 'diaspora-federation/webfinger/host_meta'
 require 'diaspora-federation/webfinger/web_finger'
+require 'diaspora-federation/webfinger/h_card'

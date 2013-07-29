@@ -20,7 +20,9 @@ module DiasporaFederation; module WebFinger
 
     attr_reader :acct_uri, :alias_url, :hcard_url, :seed_url, :profile_url, :updates_url
 
-    # @deprecated
+    # @deprecated Either convert these to +Property+ elements or move to the
+    #   +hCard+, which actually has fields for an +UID+ and +KEY+ defined in
+    #   the +vCard+ specification (will affect older Diaspora* installations).
     attr_reader :guid, :pubkey
 
     # +hcard+ link relation
@@ -29,8 +31,9 @@ module DiasporaFederation; module WebFinger
     # +seed_location+ link relation
     REL_SEED = 'http://joindiaspora.com/seed_location'
 
-    # @deprecated This should be a +Property+ or moved to the +hcard+, but +Link+
-    #   is inappropriate according to the specification.
+    # @deprecated This should be a +Property+ or moved to the +hCard+, but +Link+
+    #   is inappropriate according to the specification (will affect older
+    #   Diaspora* installations).
     # +guid+ link relation
     REL_GUID = 'http://joindiaspora.com/guid'
 
@@ -42,7 +45,8 @@ module DiasporaFederation; module WebFinger
     REL_UPDATES = 'http://schemas.google.com/g/2010#updates-from'
 
     # @deprecated This should be a +Property+ or moved to the +hcard+, but +Link+
-    #   is inappropriate according to the specification.
+    #   is inappropriate according to the specification (will affect older
+    #   Diaspora* installations).
     # +diaspora-public-key+ link relation
     REL_PUBKEY = 'diaspora-public-key'
 
