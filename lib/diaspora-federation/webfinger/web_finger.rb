@@ -50,6 +50,8 @@ module DiasporaFederation; module WebFinger
     # +diaspora-public-key+ link relation
     REL_PUBKEY = 'diaspora-public-key'
 
+    # Create the XML string from the current WebFinger instance
+    # @return [String] XML string
     def to_xml
       doc = XrdDocument.new
       doc.subject = @acct_uri
@@ -108,6 +110,7 @@ module DiasporaFederation; module WebFinger
       wf
     end
 
+    # Create a WebFinger instance from the given XML string.
     # @param [String] webfinger_xml WebFinger XML string
     # @return [WebFinger] WebFinger instance
     def self.from_xml(webfinger_xml)

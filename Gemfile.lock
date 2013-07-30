@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     diaspora-federation (0.0.1pre)
+      libxml-ruby (~> 2.6.0)
       ox (~> 2.0.4)
       valid (~> 0.3.1)
 
@@ -17,6 +18,7 @@ GEM
       thor
     diff-lcs (1.2.4)
     fabrication (2.7.2)
+    libxml-ruby (2.6.0)
     mime-types (1.23)
     multi_json (1.7.7)
     ox (2.0.4)

@@ -6,7 +6,7 @@ describe WebFinger::HCard do
   let(:first_name) { 'Test' }
   let(:last_name)  { 'Testington' }
   let(:name) { "#{first_name} #{last_name}" }
-  let(:profile_url) { 'https://pod.example.tld/users/me' }
+  let(:url) { 'https://pod.example.tld/users/me' }
   let(:photo_url) { 'https://pod.example.tld/uploads/f.jpg' }
   let(:photo_url_m) { 'https://pod.example.tld/uploads/m.jpg' }
   let(:photo_url_s) { 'https://pod.example.tld/uploads/s.jpg' }
@@ -70,7 +70,7 @@ describe WebFinger::HCard do
         <dl class="entity_url">
           <dt>Url</dt>
           <dd>
-            <a id="pod_location" class="url" rel="me" href="#{profile_url}">#{profile_url}</a>
+            <a id="pod_location" class="url" rel="me" href="#{url}">#{url}</a>
           </dd>
         </dl>
         <dl class="entity_photo">
@@ -107,7 +107,7 @@ HTML
 <dl class='entity_nickname'>
 <dt>Nickname</dt>
 <dd>
-<a class='nickname url uid' href='#{profile_url}' rel='me'>#{name}</a>
+<a class='nickname url uid' href='#{url}' rel='me'>#{name}</a>
 </dd>
 </dl>
 <dl class='entity_given_name'>
@@ -131,7 +131,7 @@ HTML
 <dl class='entity_url'>
 <dt>URL</dt>
 <dd>
-<a class='url' href='#{profile_url}' id='pod_location' rel='me'>#{profile_url}</a>
+<a class='url' href='#{url}' id='pod_location' rel='me'>#{url}</a>
 </dd>
 </dl>
 <dl class='entity_photo'>
@@ -164,13 +164,20 @@ HTML
 HTML
   }
 
+  let(:invalid_html) { <<-HTML
+<div id="content">
+  <span class='fn'>#{name}</span>
+</div>
+HTML
+  }
+
   context 'generation' do
     it 'creates an instance from a data hash' do
       hc = WebFinger::HCard.from_account({
         guid: guid,
         diaspora_handle: handle,
         full_name: name,
-        profile_url: profile_url,
+        url: url,
         photo_full_url: photo_url,
         photo_medium_url: photo_url_m,
         photo_small_url: photo_url_s,
@@ -199,6 +206,38 @@ HTML
   context 'parsing' do
     it 'reads its own output' do
       hc = WebFinger::HCard.from_html(html)
+      hc.guid.should eql(guid)
+      hc.nickname.should eql(handle.split('@').first)
+      hc.full_name.should eql(name)
+      hc.url.should eql(url)
+      hc.photo_full_url.should eql(photo_url)
+      hc.photo_medium_url.should eql(photo_url_m)
+      hc.photo_small_url.should eql(photo_url_s)
+      hc.pubkey.should eql(key)
+      hc.searchable.should eql(searchable.to_s)
+
+      hc.first_name.should eql(first_name)
+      hc.last_name.should eql(last_name)
+    end
+
+    it 'reads old-style HTML' do
+      hc = WebFinger::HCard.from_html(historic_html)
+      hc.url.should eql(url)
+      hc.photo_full_url.should eql(photo_url)
+      hc.photo_medium_url.should eql(photo_url_m)
+      hc.photo_small_url.should eql(photo_url_s)
+      hc.searchable.should eql(searchable.to_s)
+
+      hc.first_name.should eql(first_name)
+      hc.last_name.should eql(last_name)
+    end
+
+    it 'fails if the document is incomplete' do
+      expect { WebFinger::HCard.from_html(invalid_html) }.to raise_error(WebFinger::HCard::InvalidData)
+    end
+
+    it 'fails if the document is not HTML' do
+      expect { WebFinger::HCard.from_html('') }.to raise_error
     end
   end
 end

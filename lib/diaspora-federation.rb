@@ -1,6 +1,7 @@
 
 # gems
 require 'ox'
+require 'libxml'
 require 'validation'
 require 'base64'
 require 'openssl'
