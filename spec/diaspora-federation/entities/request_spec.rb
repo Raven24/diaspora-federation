@@ -5,7 +5,6 @@ describe Entities::Request do
                 recipient_handle: 'bob@otherpod.net'} }
 
   let(:xml) { <<-XML
-
 <request>
   <sender_handle>alice@somepod.org</sender_handle>
   <recipient_handle>bob@otherpod.net</recipient_handle>

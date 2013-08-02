@@ -5,7 +5,6 @@ describe Entities::Photo do
   let(:data) { Fabricate.attributes_for(:photo) }
 
   let(:xml) { <<-XML
-
 <photo>
   <guid>#{data[:guid]}</guid>
   <diaspora_handle>#{data[:diaspora_handle]}</diaspora_handle>

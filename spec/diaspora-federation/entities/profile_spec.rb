@@ -4,7 +4,6 @@ describe Entities::Profile do
   let(:data) { Fabricate.attributes_for(:profile) }
 
   let(:xml) { <<-XML
-
 <profile>
   <diaspora_handle>#{data[:diaspora_handle]}</diaspora_handle>
   <first_name>#{data[:first_name]}</first_name>

@@ -20,7 +20,7 @@ shared_examples 'an Entity subclass' do
 
     context '#to_xml' do
       it 'produces correct XML' do
-        Ox.dump(instance.to_xml).should eql(xml)
+        instance.to_xml.to_s.should eql(xml.strip)
       end
     end
   end

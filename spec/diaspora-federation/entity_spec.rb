@@ -37,7 +37,7 @@ describe Entity do
   context '#to_xml' do
     it 'returns an Ox::Element' do
       t = Entities::EntityTest.new({})
-      t.to_xml.should be_an_instance_of Ox::Element
+      t.to_xml.should be_an_instance_of Nokogiri::XML::Element
     end
 
     it 'has the root node named after the class (underscored)' do
@@ -47,7 +47,7 @@ describe Entity do
 
     it 'contains nodes for each of the properties' do
       t = Entities::EntityTest.new({})
-      t.to_xml.nodes.each do |node|
+      t.to_xml.children.each do |node|
         ['test1','test2','test3'].should include(node.name)
       end
     end
@@ -106,10 +106,10 @@ describe Entity do
     it 'gets xml-ified by #to_xml' do
       e = Entities::NestedTest.new(nested_data)
       xml = e.to_xml
-      xml.nodes.each do |n|
+      xml.children.each do |n|
         ['asdf', 'qwer', 'entity_test'].should include(n.name)
       end
-      xml.locate('entity_test').should have(3).items
+      xml.xpath('entity_test').should have(3).items
     end
   end
 end

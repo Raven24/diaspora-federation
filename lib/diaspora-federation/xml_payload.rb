@@ -19,14 +19,16 @@ module DiasporaFederation
     # @api private
     #
     # @param [Entity] entity subject
-    # @return [Ox::Element] XML root node
+    # @return [Nokogiri::XML::Element] XML root node
     # @raise [ArgumentError] if the argument is not an Entity subclass
     def self.pack(entity)
       raise ArgumentError unless entity.is_a?(Entity)
 
-      wrap = Ox::Element.new('XML')
-      wrap_post = Ox::Element.new('post')
-      wrap_post << entity.to_xml
+      entity_xml = entity.to_xml
+      doc = entity_xml.document
+      wrap = Nokogiri::XML::Element.new('XML', doc)
+      wrap_post = Nokogiri::XML::Element.new('post', doc)
+      entity_xml.parent = wrap_post
       wrap << wrap_post
 
       wrap
@@ -38,17 +40,17 @@ module DiasporaFederation
     #
     # @api private
     #
-    # @param [Ox::Element] xml payload XML root node
+    # @param [Nokogiri::XML::Element] xml payload XML root node
     # @return [Entity] re-constructed Entity instance
     # @raise [ArgumentError] if the argument is not an {Ox::Element}
     # @raise [InvalidStructure] if the XML doesn't look like the wrapper XML
     # @raise [UnknownEntity] if the class for the entity contained inside the
     #   XML can't be found
     def self.unpack(xml)
-      raise ArgumentError unless xml.instance_of?(Ox::Element)
+      raise ArgumentError unless xml.instance_of?(Nokogiri::XML::Element)
       raise InvalidStructure unless wrap_valid?(xml)
 
-      data = xml.nodes[0].nodes[0]
+      data = xml.children[0].children[0]
       klass_name = entity_class(data.name)
       raise UnknownEntity unless Entities.const_defined?(klass_name)
 
@@ -60,8 +62,8 @@ module DiasporaFederation
 
     # @param [Ox::Element]
     def self.wrap_valid?(element)
-      (element.name == 'XML' && element.nodes[0] &&
-      element.nodes[0].name == 'post' && element.nodes[0].nodes[0])
+      (element.name == 'XML' && element.children[0] &&
+      element.children[0].name == 'post' && element.children[0].children[0])
     end
     private_class_method :wrap_valid?
 
@@ -94,18 +96,18 @@ module DiasporaFederation
 
         if type == String
           # create simple entry in data hash
-          n = node.locate(name.to_s)
+          n = node.xpath(name.to_s)
           data[name] = n.first.text if n.any?
         elsif type.instance_of?(Array)
           # collect all nested children of that type and create an array in the data hash
-          n = node.locate(type.first.entity_name)
+          n = node.xpath(type.first.entity_name)
           data[name] = []
           n.each do |child|
             data[name] << populate_entity(type.first, child)
           end if n.any?
         elsif type.ancestors.include?(Entity)
           # create an entry in the data hash for the nested entity
-          n = node.locate(type.entity_name)
+          n = node.xpath(type.entity_name)
           data[name] = populate_entity(type, n.first) if n.any?
         end
       end

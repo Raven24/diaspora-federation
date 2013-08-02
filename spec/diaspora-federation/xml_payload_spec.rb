@@ -5,7 +5,6 @@ describe XmlPayload do
   let(:payload) { XmlPayload.pack(entity) }
 
   let(:xml_str) { <<XML
-
 <XML>
   <post>
     <test_entity>
@@ -33,21 +32,21 @@ XML
 
     it 'returns an xml wrapper' do
       xml = XmlPayload.pack(entity)
-      xml.should be_an_instance_of Ox::Element
+      xml.should be_an_instance_of Nokogiri::XML::Element
       xml.name.should eql('XML')
-      xml.nodes.should have(1).item
-      xml.nodes[0].name.should eql('post')
-      xml.nodes[0].nodes.should have(1).item
+      xml.children.should have(1).item
+      xml.children[0].name.should eql('post')
+      xml.children[0].children.should have(1).item
     end
 
     it 'returns the entity xml inside the wrapper' do
       xml = XmlPayload.pack(entity)
-      xml.nodes[0].nodes[0].name.should eql('test_entity')
-      xml.nodes[0].nodes[0].nodes.should have(1).item
+      xml.children[0].children[0].name.should eql('test_entity')
+      xml.children[0].children[0].children.should have(1).item
     end
 
     it 'produces the expected XML' do
-      Ox.dump(XmlPayload.pack(entity)).should eql(xml_str)
+      XmlPayload.pack(entity).to_xml.should eql(xml_str.strip)
     end
   end
 
@@ -74,7 +73,7 @@ XML
 </root>
 XML
         expect {
-          XmlPayload.unpack(Ox.parse(xml))
+          XmlPayload.unpack(Nokogiri::XML::Document.parse(xml).root)
         }.to raise_error XmlPayload::InvalidStructure
       end
     end

@@ -4,7 +4,6 @@ describe Entities::Message do
   let(:data) { Fabricate.attributes_for(:message) }
 
   let(:xml) { <<-XML
-
 <message>
   <guid>#{data[:guid]}</guid>
   <parent_guid>#{data[:parent_guid]}</parent_guid>

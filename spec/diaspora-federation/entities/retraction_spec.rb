@@ -6,7 +6,6 @@ describe Entities::Retraction do
                 type: 'StatusMessage'} }
 
   let(:xml) { <<-XML
-
 <retraction>
   <post_guid>0123456789abcdef</post_guid>
   <diaspora_handle>luke@diaspora.example.tld</diaspora_handle>

@@ -66,12 +66,12 @@ module DiasporaFederation
     end
 
     # Returns the XML representation for this entity constructed out of
-    # {Ox::Element}s
+    # {Nokogiri::XML::Element}s
     #
-    # @see Ox.dump
+    # @see Nokogiri::XML::Node.to_xml
     # @see XmlPayload.pack
     #
-    # @return [Ox::Element] root element containing properties as child elements
+    # @return [Nokogiri::XML::Element] root element containing properties as child elements
     def to_xml
       entity_xml
     end
@@ -119,17 +119,20 @@ module DiasporaFederation
        val.all? { |v| v.instance_of?(t.first) })
     end
 
+    # Serialize the Entity into XML elements
+    # @return [Nokogiri::XML::Element] root node
     def entity_xml
-      root_element = Ox::Element.new(self.class.entity_name)
+      doc = Nokogiri::XML::Document.new
+      root_element = Nokogiri::XML::Element.new(self.class.entity_name, doc)
 
       self.class.class_props.each do |prop_def|
         name = prop_def[:name]
         type = prop_def[:type]
         if type == String
           # create simple node, fill it with text and append to root
-          node = Ox::Element.new(name.to_s)
+          node = Nokogiri::XML::Element.new(name.to_s, doc)
           data = send(name).to_s
-          node << data unless data.empty?
+          node.content = data unless data.empty?
           root_element << node
         else
           # call #to_xml for each item and append to root

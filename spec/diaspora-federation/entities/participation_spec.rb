@@ -9,7 +9,6 @@ describe Entities::Participation do
                 diaspora_handle: 'luke@diaspora.example.tld'} }
 
   let(:xml) { <<-XML
-
 <participation>
   <guid>0123456789abcdef</guid>
   <target_type>Post</target_type>

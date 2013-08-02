@@ -7,7 +7,6 @@ describe Entities::SignedRetraction do
                 target_author_signature: 'AAAAAA=='} }
 
   let(:xml) { <<-XML
-
 <signed_retraction>
   <target_guid>0123456789abcdef</target_guid>
   <target_type>StatusMessage</target_type>

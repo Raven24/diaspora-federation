@@ -14,7 +14,6 @@ describe Entities::Reshare do
                 provider_display_name: 'mobile'} }
 
   let(:xml) { <<-XML
-
 <reshare>
   <root_diaspora_id>robert_root@pod.example.tld</root_diaspora_id>
   <root_guid>fedcba9876543210</root_guid>

@@ -10,7 +10,6 @@ describe Entities::Like do
                 diaspora_handle: 'luke@diaspora.example.tld'} }
 
   let(:xml) { <<-XML
-
 <like>
   <positive>true</positive>
   <guid>0123456789abcdef</guid>

@@ -8,7 +8,6 @@ describe Entities::RelayableRetraction do
                 target_author_signature: 'BBBBBB='} }
 
   let(:xml) { <<-XML
-
 <relayable_retraction>
   <parent_author_signature>AAAAAA=</parent_author_signature>
   <target_guid>0123456789abcdef</target_guid>

@@ -15,7 +15,6 @@ describe Entities::Conversation do
                 participant_handles: "#{Fabricate.sequence(:diaspora_handle)};#{Fabricate.sequence(:diaspora_handle)}"} }
 
   let(:xml) { <<-XML
-
 <conversation>
   <guid>#{data[:guid]}</guid>
   <subject>#{data[:subject]}</subject>

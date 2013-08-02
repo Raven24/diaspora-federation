@@ -14,7 +14,6 @@ describe Entities::StatusMessage do
                 provider_display_name: 'something'} }
 
   let(:xml) { <<-XML
-
 <status_message>
   <raw_message>#{data[:raw_message]}</raw_message>
   <photo>

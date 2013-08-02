@@ -1,7 +1,6 @@
 
 # gems
-require 'ox'
-require 'libxml'
+require 'nokogiri'
 require 'validation'
 require 'base64'
 require 'openssl'

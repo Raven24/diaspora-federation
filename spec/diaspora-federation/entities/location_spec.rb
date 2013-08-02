@@ -4,7 +4,6 @@ describe Entities::Location do
   let(:data) { Fabricate.attributes_for(:location) }
 
   let(:xml) { <<-XML
-
 <location>
   <address>#{data[:address]}</address>
   <lat>#{data[:lat]}</lat>

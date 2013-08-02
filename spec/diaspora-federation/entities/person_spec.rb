@@ -9,7 +9,6 @@ describe Entities::Person do
                 exported_key: "-----BEGIN RSA PUBLIC KEY-----\nAAAAAA==\n-----END RSA PUBLIC KEY-----\n"} }
 
   let(:xml) { <<-XML
-
 <person>
   <guid>#{data[:guid]}</guid>
   <diaspora_handle>#{data[:diaspora_handle]}</diaspora_handle>

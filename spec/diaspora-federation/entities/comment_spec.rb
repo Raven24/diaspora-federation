@@ -9,7 +9,6 @@ describe Entities::Comment do
                 diaspora_handle: 'bob@pod.somedomain.tld'} }
 
   let(:xml) { <<-XML
-
 <comment>
   <guid>0123456789abcdef</guid>
   <parent_guid>fedcba987654321</parent_guid>
