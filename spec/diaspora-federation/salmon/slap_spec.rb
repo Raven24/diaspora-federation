@@ -20,10 +20,11 @@ describe Salmon::Slap do
     end
 
     it 'generates valid xml' do
-      doc = Ox.parse(slap)
-      doc.locate('diaspora').should have(1).item
-      doc.diaspora.header.author_id.text.should eql(author_id)
-      doc.locate('diaspora/me:env').should have(1).item
+      ns = { 'd' => DiasporaFederation::XMLNS, 'me' => Salmon::MagicEnvelope::XMLNS }
+      doc = Nokogiri::XML::Document.parse(slap)
+      doc.root.name.should eql('diaspora')
+      doc.at_xpath('d:diaspora/d:header/d:author_id', ns).content.should eql(author_id)
+      doc.xpath('d:diaspora/me:env', ns).should have(1).item
     end
   end
 

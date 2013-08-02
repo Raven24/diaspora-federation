@@ -52,13 +52,13 @@ XML
 
   context '::unpack' do
     context 'sanity' do
-      it 'expects an Ox::Element as param' do
+      it 'expects an Nokogiri::XML::Element as param' do
         expect {
           XmlPayload.unpack(payload)
         }.not_to raise_error
       end
 
-      it 'raises and error when the param is not an Ox::Element' do
+      it 'raises and error when the param is not an Nokogiri::XML::Element' do
         ['asdf', 1234, true, :test, entity].each do |val|
           expect {
             XmlPayload.unpack(val)

@@ -122,7 +122,7 @@ module DiasporaFederation
     # Serialize the Entity into XML elements
     # @return [Nokogiri::XML::Element] root node
     def entity_xml
-      doc = Nokogiri::XML::Document.new
+      doc = Nokogiri::XML::DocumentFragment.new(Nokogiri::XML::Document.new)
       root_element = Nokogiri::XML::Element.new(self.class.entity_name, doc)
 
       self.class.class_props.each do |prop_def|

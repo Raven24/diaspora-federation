@@ -6,6 +6,7 @@ describe Salmon::EncryptedSlap do
   let(:okey) { OpenSSL::PKey::RSA.generate(1024) } # use small key for speedy specs
   let(:entity) { Entities::TestEntity.new(test: 'qwertzuiop') }
   let(:slap_xml) { Salmon::EncryptedSlap.generate_xml(author_id, pkey, entity, okey.public_key) }
+  let(:ns) { { 'd' => DiasporaFederation::XMLNS, 'me' => Salmon::MagicEnvelope::XMLNS } }
 
   context '::generate_xml' do
     context 'sanity' do
@@ -23,15 +24,17 @@ describe Salmon::EncryptedSlap do
     end
 
     it 'generates valid xml' do
-      doc = Ox.parse(slap_xml)
-      doc.locate('diaspora').should have(1).item
-      doc.locate('diaspora/encrypted_header').should have(1).item
-      doc.locate('diaspora/encrypted_header').first.text.should_not be_empty
-      doc.locate('diaspora/me:env').should have(1).item
+      doc = Nokogiri::XML::Document.parse(slap_xml)
+      doc.root.name.should eql('diaspora')
+      doc.at_xpath('d:diaspora/d:encrypted_header', ns).content.should_not be_empty
+      doc.xpath('d:diaspora/me:env', ns).should have(1).item
     end
 
     context 'header' do
-      subject { Ox.parse(slap_xml).locate('diaspora/encrypted_header').first.text }
+      subject {
+        doc = Nokogiri::XML::Document.parse(slap_xml)
+        doc.at_xpath('d:diaspora/d:encrypted_header', ns).content
+      }
       let(:cipher_header) { JSON.parse(Base64.decode64(subject)) }
       let(:header_key) {
         JSON.parse(okey.private_decrypt(Base64.decode64(cipher_header['aes_key'])))
@@ -60,12 +63,12 @@ describe Salmon::EncryptedSlap do
                                       header_key['key'],
                                       header_key['iv'])
         }.not_to raise_error
-        header_doc = Ox.parse(header)
-        header_doc.name.should eql('decrypted_header')
-        header_doc.locate('iv').should have(1).item
-        header_doc.locate('aes_key').should have(1).item
-        header_doc.locate('author_id').should have(1).item
-        header_doc.locate('author_id').first.text.should eql(author_id)
+        header_doc = Nokogiri::XML::Document.parse(header)
+        header_doc.root.name.should eql('decrypted_header')
+        header_doc.xpath('//iv').should have(1).item
+        header_doc.xpath('//aes_key').should have(1).item
+        header_doc.xpath('//author_id').should have(1).item
+        header_doc.at_xpath('//author_id').content.should eql(author_id)
       end
     end
   end

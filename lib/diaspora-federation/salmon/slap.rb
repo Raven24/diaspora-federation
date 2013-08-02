@@ -59,16 +59,26 @@ module DiasporaFederation; module Salmon
     # @raise [MissingMagicEnvelope] if the +me:env+ element is missing from the XML
     def self.from_xml(slap_xml)
       raise ArgumentError unless slap_xml.instance_of?(String)
-      doc = Ox.load(DiasporaFederation.ensure_xml_prolog(slap_xml), mode: :generic)
+      doc = Nokogiri::XML::Document.parse(slap_xml)
+      ns = { 'd' => DiasporaFederation::XMLNS, 'me' => Salmon::MagicEnvelope::XMLNS }
+      author_xpath = 'd:diaspora/d:header/d:author_id'
+      magicenv_xpath = 'd:diaspora/me:env'
+
+      if doc.namespaces.empty?
+        ns = nil
+        author_xpath = 'diaspora/header/author_id'
+        magicenv_xpath = 'diaspora/env'
+      end
+
       slap = Slap.new
 
-      author_elem = doc.locate('diaspora/header/author_id')
-      raise MissingAuthor if author_elem.empty?
-      slap.author_id = author_elem.first.text
+      author_elem = doc.at_xpath(author_xpath, ns)
+      raise MissingAuthor if author_elem.nil? || author_elem.content.empty?
+      slap.author_id = author_elem.content
 
-      magic_env_elem = doc.locate('diaspora/me:env')
-      raise MissingMagicEnvelope if magic_env_elem.empty?
-      slap.magic_envelope = magic_env_elem.first
+      magic_env_elem = doc.at_xpath(magicenv_xpath, ns)
+      raise MissingMagicEnvelope if magic_env_elem.nil?
+      slap.magic_envelope = magic_env_elem
 
       slap
     end
@@ -84,24 +94,26 @@ module DiasporaFederation; module Salmon
       raise ArgumentError unless author_id.instance_of?(String) &&
                                  pkey.instance_of?(OpenSSL::PKey::RSA) &&
                                  entity.is_a?(Entity)
-      doc = Ox::Document.new(version: '1.0', encoding: 'UTF-8')
 
-      root = Ox::Element.new('diaspora')
-      root['xmlns'] = DiasporaFederation::XMLNS
-      root['xmlns:me'] = MagicEnvelope::XMLNS
-      doc << root
+      doc = Nokogiri::XML::Document.new()
+      doc.encoding = 'UTF-8'
 
-      header = Ox::Element.new('header')
+      root = Nokogiri::XML::Element.new('diaspora', doc)
+      root.default_namespace = DiasporaFederation::XMLNS
+      root.add_namespace('me', MagicEnvelope::XMLNS)
+      doc.root = root
+
+      header = Nokogiri::XML::Element.new('header', doc)
       root << header
 
-      author = Ox::Element.new('author_id')
-      author << author_id
+      author = Nokogiri::XML::Element.new('author_id', doc)
+      author.content = author_id
       header << author
 
-      magic_envelope = MagicEnvelope.new(pkey, entity)
-      root << magic_envelope.envelop
+      magic_envelope = MagicEnvelope.new(pkey, entity, root)
+      magic_envelope.envelop
 
-      Ox.dump(doc, with_xml: true)
+      doc.to_xml
     end
 
     # Raised, if the element containing the author is empty.

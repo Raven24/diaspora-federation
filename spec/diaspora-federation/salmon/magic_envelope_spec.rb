@@ -6,10 +6,10 @@ describe Salmon::MagicEnvelope do
   let(:envelope) { Salmon::MagicEnvelope.new(pkey, payload).envelop }
 
   def sig_subj(env)
-    data = Base64.urlsafe_decode64(env.locate('me:data').first.text)
-    type = env.locate('me:data').first['type']
-    enc = env.locate('me:encoding').first.text
-    alg = env.locate('me:alg').first.text
+    data = Base64.urlsafe_decode64(env.at_xpath('me:data').content)
+    type = env.at_xpath('me:data')['type']
+    enc = env.at_xpath('me:encoding').content
+    alg = env.at_xpath('me:alg').content
 
     subj = [data, type, enc, alg].map { |i| Base64.urlsafe_encode64(i) }.join('.')
   end
@@ -17,7 +17,7 @@ describe Salmon::MagicEnvelope do
   def re_sign(env, key)
     new_sig = Base64.urlsafe_encode64(
               key.sign(OpenSSL::Digest::SHA256.new, sig_subj(env)))
-    env.locate('me:sig').first.text.replace(new_sig)
+    env.at_xpath('me:sig').content = new_sig
   end
 
   context 'sanity' do
@@ -37,14 +37,14 @@ describe Salmon::MagicEnvelope do
   context '#envelop' do
     subject { Salmon::MagicEnvelope.new(pkey, payload) }
 
-    its(:envelop) { should be_an_instance_of Ox::Element }
+    its(:envelop) { should be_an_instance_of Nokogiri::XML::Element }
 
     it 'returns a magic envelope of correct structure' do
       env = subject.envelop
-      env.name.should eql('me:env')
+      env.name.should eql('env')
 
-      control = ['me:data', 'me:encoding', 'me:alg', 'me:sig']
-      env.nodes.each do |node|
+      control = ['data', 'encoding', 'alg', 'sig']
+      env.children.each do |node|
         control.should include(node.name)
         control.reject! { |i| i == node.name }
       end
@@ -56,7 +56,7 @@ describe Salmon::MagicEnvelope do
       env = subject.envelop
 
       subj = sig_subj(env)
-      sig = Base64.urlsafe_decode64(env.locate('me:sig').first.text)
+      sig = Base64.urlsafe_decode64(env.at_xpath('me:sig').content)
 
       pkey.public_key.verify(OpenSSL::Digest::SHA256.new, sig, subj).should be_true
     end
@@ -107,7 +107,7 @@ describe Salmon::MagicEnvelope do
 
       it 'verifies the envelope structure' do
         expect {
-          Salmon::MagicEnvelope.unenvelop(Ox::Element.new('asdf'), pkey.public_key)
+          Salmon::MagicEnvelope.unenvelop(Nokogiri::XML::Document.parse('<asdf/>').root, pkey.public_key)
         }.to raise_error Salmon::MagicEnvelope::InvalidEnvelope
       end
 
@@ -120,9 +120,8 @@ describe Salmon::MagicEnvelope do
 
       it 'verifies the encoding' do
         bad_env = Salmon::MagicEnvelope.new(pkey, payload).envelop
-        elem = bad_env.locate('me:encoding').first
-        elem.nodes.clear
-        elem << 'invalid_enc'
+        elem = bad_env.at_xpath('me:encoding')
+        elem.content = 'invalid_enc'
         re_sign(bad_env, pkey)
         expect {
           e = Salmon::MagicEnvelope.unenvelop(bad_env, pkey.public_key)
@@ -131,9 +130,8 @@ describe Salmon::MagicEnvelope do
 
       it 'verifies the algorithm' do
         bad_env = Salmon::MagicEnvelope.new(pkey, payload).envelop
-        elem = bad_env.locate('me:alg').first
-        elem.nodes.clear
-        elem << 'invalid_alg'
+        elem = bad_env.at_xpath('me:alg')
+        elem.content = 'invalid_alg'
         re_sign(bad_env, pkey)
         expect {
           e = Salmon::MagicEnvelope.unenvelop(bad_env, pkey.public_key)

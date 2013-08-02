@@ -77,18 +77,28 @@ module DiasporaFederation; module Salmon
     def self.from_xml(slap_xml, pkey)
       raise ArgumentError unless slap_xml.instance_of?(String) &&
                                  pkey.instance_of?(OpenSSL::PKey::RSA)
-      doc = Ox.load(DiasporaFederation.ensure_xml_prolog(slap_xml), mode: :generic)
+      doc = Nokogiri::XML::Document.parse(slap_xml)
+      ns = { 'd' => DiasporaFederation::XMLNS, 'me' => Salmon::MagicEnvelope::XMLNS }
+      header_xpath = 'd:diaspora/d:encrypted_header'
+      magicenv_xpath = 'd:diaspora/me:env'
+
+      if doc.namespaces.empty?
+        ns = nil
+        header_xpath = 'diaspora/encrypted_header'
+        magicenv_xpath = 'diaspora/env'
+      end
+
       slap = Slap.new
 
-      header_elem = doc.locate('diaspora/encrypted_header')
-      raise MissingHeader if header_elem.empty?
-      header = header_data(header_elem.first.text, pkey)
+      header_elem = doc.at_xpath(header_xpath, ns)
+      raise MissingHeader if header_elem.nil?
+      header = header_data(header_elem.content, pkey)
       slap.author_id = header[:author_id]
       slap.cipher_params = { key: header[:aes_key], iv: header[:iv] }
 
-      magic_env_elem = doc.locate('diaspora/me:env')
-      raise MissingMagicEnvelope if magic_env_elem.empty?
-      slap.magic_envelope = magic_env_elem.first
+      magic_env_elem = doc.at_xpath(magicenv_xpath, ns)
+      raise MissingMagicEnvelope if magic_env_elem.nil?
+      slap.magic_envelope = magic_env_elem
 
       slap
     end
@@ -106,21 +116,22 @@ module DiasporaFederation; module Salmon
                                  pkey.instance_of?(OpenSSL::PKey::RSA) &&
                                  entity.is_a?(Entity) &&
                                  pubkey.instance_of?(OpenSSL::PKey::RSA)
-      doc = Ox::Document.new(version: '1.0', encoding: 'UTF-8')
 
-      root = Ox::Element.new('diaspora')
-      root['xmlns'] = DiasporaFederation::XMLNS
-      root['xmlns:me'] = MagicEnvelope::XMLNS
-      doc << root
+      doc = Nokogiri::XML::Document.new()
+      doc.encoding = 'UTF-8'
 
-      magic_envelope = MagicEnvelope.new(pkey, entity)
+      root = Nokogiri::XML::Element.new('diaspora', doc)
+      root.default_namespace = DiasporaFederation::XMLNS
+      root.add_namespace('me', MagicEnvelope::XMLNS)
+      doc.root = root
+
+      magic_envelope = MagicEnvelope.new(pkey, entity, root)
       envelope_key = magic_envelope.encrypt!
 
-      header = encrypted_header(author_id, envelope_key, pubkey)
-      root << header
-      root << magic_envelope.envelop
+      encrypted_header(author_id, envelope_key, pubkey, root)
+      magic_envelope.envelop
 
-      Ox.dump(doc, with_xml: true)
+      doc.to_xml
     end
 
     # decrypts and reads the data from the encrypted XML header
@@ -131,9 +142,9 @@ module DiasporaFederation; module Salmon
       header_elem = decrypt_header(data, pkey)
       raise InvalidHeader unless header_elem.name == 'decrypted_header'
 
-      iv = header_elem.locate('iv').first.text
-      key = header_elem.locate('aes_key').first.text
-      author = header_elem.locate('author_id').first.text
+      iv = header_elem.at_xpath('iv').content
+      key = header_elem.at_xpath('aes_key').content
+      author = header_elem.at_xpath('author_id').content
 
       { iv: iv, aes_key: key, author_id: author }
     end
@@ -142,7 +153,7 @@ module DiasporaFederation; module Salmon
     # decrypts the xml header
     # @param [String] base64 encoded, encrypted header data
     # @param [OpenSSL::PKey::RSA] private_key for decryption
-    # @return [Ox::Element] header xml document
+    # @return [Nokogiri::XML::Element] header xml document
     def self.decrypt_header(data, pkey)
       cipher_header = JSON.parse(Base64.decode64(data))
       header_key = JSON.parse(pkey.private_decrypt(Base64.decode64(cipher_header['aes_key'])))
@@ -150,7 +161,7 @@ module DiasporaFederation; module Salmon
       xml = Salmon.aes_decrypt(cipher_header['ciphertext'],
                                header_key['key'],
                                header_key['iv'])
-      Ox.load(xml, mode: :generic)
+      Nokogiri::XML::Document.parse(xml).root
     end
     private_class_method :decrypt_header
 
@@ -159,7 +170,8 @@ module DiasporaFederation; module Salmon
     # @param [String] diaspora_handle
     # @param [Hash] envelope cipher params
     # @param [OpenSSL::PKey::RSA] recipient public_key
-    def self.encrypted_header(author_id, envelope_key, pubkey)
+    # @param parent_node [Nokogiri::XML::Element] parent element for insering in XML document
+    def self.encrypted_header(author_id, envelope_key, pubkey, parent_node)
       data = header_xml(author_id, envelope_key)
       encryption_data = Salmon.aes_encrypt(data)
 
@@ -168,31 +180,24 @@ module DiasporaFederation; module Salmon
 
       json_header = JSON.generate(aes_key: encrypted_key, ciphertext: encryption_data[:ciphertext])
 
-      header = Ox::Element.new('encrypted_header')
-      header << Base64.strict_encode64(json_header)
-      header
+      header = Nokogiri::XML::Element.new('encrypted_header', parent_node.document)
+      header.content = Base64.strict_encode64(json_header)
+      parent_node << header
     end
     private_class_method :encrypted_header
 
     # generate the header xml string, including the author, aes_key and iv
     # @param [String] diaspora_handle of the author
-    # @parma [Hash] { key: '...', iv: '...' } (values in base64)
+    # @param [Hash] { key: '...', iv: '...' } (values in base64)
+    # @return [String] header XML string
     def self.header_xml(author_id, envelope_key)
-      header = Ox::Element.new('decrypted_header')
-
-      iv = Ox::Element.new('iv')
-      iv << envelope_key[:iv]
-      header << iv
-
-      key = Ox::Element.new('aes_key')
-      key << envelope_key[:key]
-      header << key
-
-      author = Ox::Element.new('author_id')
-      author << author_id
-      header << author
-
-      Ox.dump(header).strip
+      Nokogiri::XML::Builder.new do |xml|
+        xml.decrypted_header {
+          xml.iv(envelope_key[:iv])
+          xml.aes_key(envelope_key[:key])
+          xml.author_id(author_id)
+        }
+      end.to_xml.strip
     end
     private_class_method :header_xml
 

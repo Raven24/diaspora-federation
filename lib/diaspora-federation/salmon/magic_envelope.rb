@@ -42,42 +42,41 @@ module DiasporaFederation; module Salmon
 
     # Creates a new instance of MagicEnvelope.
     #
-    # @param [OpenSSL::PKey::RSA] rsa_pkey private key used for signing
-    # @param [Entity] payload Entity instance
+    # @param rsa_pkey [OpenSSL::PKey::RSA] private key used for signing
+    # @param payload [Entity] Entity instance
+    # @param parent_node [Nokogiri::XML::Element] parent element for insering in XML document
     # @raise [ArgumentError] if either argument is not of the right type
-    def initialize(rsa_pkey, payload)
+    def initialize(rsa_pkey, payload, parent_node=nil)
       raise ArgumentError unless rsa_pkey.instance_of?(OpenSSL::PKey::RSA) &&
                                  payload.is_a?(Entity)
 
+      if parent_node.nil?
+        doc = Nokogiri::XML::Document.new
+        parent_node = Nokogiri::XML::Element.new('root', doc)
+        parent_node.add_namespace('me', XMLNS)
+        doc.root = parent_node
+      end
+
+      @parent_node = parent_node
       @rsa_pkey = rsa_pkey
-      @payload = Ox.dump(XmlPayload.pack(payload)).strip
+      @payload = XmlPayload.pack(payload).to_xml.strip
     end
 
     # Builds the XML structure for the magic envelope, inserts the {ENCODING}
     # encoded data and signs the envelope using {DIGEST}.
     #
-    # @return [Ox::Element] XML root node
+    # @return [Nokogiri::XML::Element] XML root node
     def envelop
-      env = Ox::Element.new('me:env')
+      builder = Nokogiri::XML::Builder.with(@parent_node) do |xml|
+        xml['me'].env {
+          xml['me'].data(Base64.urlsafe_encode64(@payload), type: DATA_TYPE)
+          xml['me'].encoding(ENCODING)
+          xml['me'].alg(ALGORITHM)
+          xml['me'].sig(Base64.urlsafe_encode64(signature))
+        }
+      end
 
-      data = Ox::Element.new('me:data')
-      data['type'] = DATA_TYPE
-      data << Base64.urlsafe_encode64(@payload)
-      env << data
-
-      enc = Ox::Element.new('me:encoding')
-      enc << ENCODING
-      env << enc
-
-      alg = Ox::Element.new('me:alg')
-      alg << ALGORITHM
-      env << alg
-
-      sig = Ox::Element.new('me:sig')
-      sig << Base64.urlsafe_encode64(signature)
-      env << sig
-
-      env
+      builder.doc.at_xpath('//me:env')
     end
 
     # Encrypts the payload with a new, random AES cipher and returns the cipher
@@ -104,7 +103,7 @@ module DiasporaFederation; module Salmon
     # @see XmlPayload.unpack
     # @see Salmon.aes_decrypt
     #
-    # @param [Ox::Element] magic_env XML root node of a magic envelope
+    # @param [Nokogiri::XML::Element] magic_env XML root node of a magic envelope
     # @param [OpenSSL::PKey::RSA] rsa_pubkey public key to verify the signature
     # @param [Hash] cipher_params hash containing the key and iv for
     #   AES-decrypting previously encrypted data. E.g.: { iv: '...', key: '...' }
@@ -118,21 +117,23 @@ module DiasporaFederation; module Salmon
     # @raise [InvalidAlgorithm] if the algorithm used doesn't match
     def self.unenvelop(magic_env, rsa_pubkey, cipher_params=nil)
       raise ArgumentError unless rsa_pubkey.instance_of?(OpenSSL::PKey::RSA) &&
-                                 magic_env.instance_of?(Ox::Element)
+                                 magic_env.instance_of?(Nokogiri::XML::Element)
+
       raise InvalidEnvelope unless envelope_valid?(magic_env)
       raise InvalidSignature unless signature_valid?(magic_env, rsa_pubkey)
 
-      enc = magic_env.locate('me:encoding').first.text
-      alg = magic_env.locate('me:alg').first.text
+      enc = magic_env.at_xpath('me:encoding').content
+      alg = magic_env.at_xpath('me:alg').content
 
       raise InvalidEncoding unless enc == ENCODING
       raise InvalidAlgorithm unless alg == ALGORITHM
 
-      data = Base64.urlsafe_decode64(magic_env.locate('me:data').first.text)
+      data = Base64.urlsafe_decode64(magic_env.at_xpath('me:data').content)
       unless cipher_params.nil?
         data = Salmon.aes_decrypt(data, cipher_params[:key], cipher_params[:iv])
       end
-      XmlPayload.unpack(Ox.parse(data))
+
+      XmlPayload.unpack(Nokogiri::XML::Document.parse(data).root)
     end
 
     private
@@ -146,26 +147,26 @@ module DiasporaFederation; module Salmon
       @rsa_pkey.sign(DIGEST, subject)
     end
 
-    # @param [Ox::Element]
+    # @param [Nokogiri::XML::Element]
     def self.envelope_valid?(env)
-      (env.instance_of?(Ox::Element) &&
-        env.name == 'me:env' &&
-        !env.locate('me:data').empty? &&
-        !env.locate('me:encoding').empty? &&
-        !env.locate('me:alg').empty? &&
-        !env.locate('me:sig').empty?)
+      (env.instance_of?(Nokogiri::XML::Element) &&
+        env.name == 'env' &&
+        !env.at_xpath('me:data').content.empty? &&
+        !env.at_xpath('me:encoding').content.empty? &&
+        !env.at_xpath('me:alg').content.empty? &&
+        !env.at_xpath('me:sig').content.empty?)
     end
     private_class_method :envelope_valid?
 
-    # @param [Ox::Element]
+    # @param [Nokogiri::XML::Element]
     # @param [OpenSSL::PKey::RSA] public_key
     def self.signature_valid?(env, pkey)
-      subject = sig_subject([Base64.urlsafe_decode64(env.locate('me:data').first.text),
-                             env.locate('me:data').first['type'],
-                             env.locate('me:encoding').first.text,
-                             env.locate('me:alg').first.text])
+      subject = sig_subject([Base64.urlsafe_decode64(env.at_xpath('me:data').content),
+                             env.at_xpath('me:data')['type'],
+                             env.at_xpath('me:encoding').content,
+                             env.at_xpath('me:alg').content])
 
-      sig = Base64.urlsafe_decode64(env.locate('me:sig').first.text)
+      sig = Base64.urlsafe_decode64(env.at_xpath('me:sig').content)
       pkey.verify(DIGEST, sig, subject)
     end
     private_class_method :signature_valid?

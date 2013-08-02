@@ -50,7 +50,7 @@ module DiasporaFederation
       raise ArgumentError unless xml.instance_of?(Nokogiri::XML::Element)
       raise InvalidStructure unless wrap_valid?(xml)
 
-      data = xml.children[0].children[0]
+      data = xml.at_xpath('post/*[1]')
       klass_name = entity_class(data.name)
       raise UnknownEntity unless Entities.const_defined?(klass_name)
 
@@ -62,8 +62,8 @@ module DiasporaFederation
 
     # @param [Ox::Element]
     def self.wrap_valid?(element)
-      (element.name == 'XML' && element.children[0] &&
-      element.children[0].name == 'post' && element.children[0].children[0])
+      (element.name == 'XML' && !element.at_xpath('post').nil? &&
+       !element.at_xpath('post').children.empty?)
     end
     private_class_method :wrap_valid?
 
