@@ -60,48 +60,34 @@ module DiasporaFederation; module WebFinger
     # Generates an XML document from the current instance and returns it as string
     # @return [String] XML document
     def to_xml
-      doc = Ox::Document.new(version: '1.0', encoding: 'UTF-8')
+      Nokogiri::XML::Builder.new(encoding: 'UTF-8') do |xml|
+        xml.XRD('xmlns' => XMLNS) {
+          if !@expires.nil? && @expires.instance_of?(DateTime)
+            xml.Expires(@expires.strftime(DATETIME_FORMAT))
+          end
 
-      root = Ox::Element.new('XRD')
-      root['xmlns'] = XMLNS
-      doc << root
+          if !@subject.nil? && !@subject.empty?
+            xml.Subject(@subject)
+          end
 
-      if !@expires.nil? && @expires.instance_of?(DateTime)
-        exp = Ox::Element.new('Expires')
-        exp << @expires.strftime(DATETIME_FORMAT)
-        root << exp
-      end
+          @aliases.each do |a|
+            next if !a.instance_of?(String) || a.empty?
+            xml.Alias(a.to_s)
+          end
 
-      if !@subject.nil? && !@subject.empty?
-        subj = Ox::Element.new('Subject')
-        subj << @subject
-        root << subj
-      end
+          @properties.each do |type, val|
+            xml.Property(val.to_s, type: type)
+          end
 
-      @aliases.each do |a|
-        next if !a.instance_of?(String) || a.empty?
-
-        elem = Ox::Element.new('Alias')
-        elem << a.to_s
-        root << elem
-      end
-
-      @properties.each do |type, val|
-        elem = Ox::Element.new('Property')
-        elem['type'] = type
-        elem << val.to_s unless val.nil? || val.empty?
-        root << elem
-      end
-
-      @links.each do |l|
-        elem = Ox::Element.new('Link')
-        LINK_ATTRS.each do |attr|
-          elem[attr.to_s] = l[attr] if l.key?(attr)
-        end
-        root << elem
-      end
-
-      Ox.dump(doc, with_xml: true)
+          @links.each do |l|
+            attrs = {}
+            LINK_ATTRS.each do |attr|
+              attrs[attr.to_s] = l[attr] if l.key?(attr)
+            end
+            xml.Link(attrs)
+          end
+        }
+      end.to_xml
     end
 
     # Parse the XRD document from the given string and create a hash containing
@@ -116,38 +102,39 @@ module DiasporaFederation; module WebFinger
     def self.xml_data(xrd_doc)
       raise ArgumentError unless xrd_doc.instance_of?(String)
 
-      doc = Ox.load(DiasporaFederation.ensure_xml_prolog(xrd_doc), mode: :generic, effort: :tolerant)
-      raise InvalidDocument if doc.locate('XRD').empty?
+      doc = Nokogiri::XML::Document.parse(xrd_doc)
+      raise InvalidDocument if !doc.root || doc.root.name != 'XRD'
 
       data = {}
+      ns = { 'xrd' => XMLNS }
 
-      exp_elem = doc.locate('XRD/Expires')
-      unless exp_elem.empty?
-        data[:expires] = DateTime.strptime(exp_elem.first.text, DATETIME_FORMAT)
+      exp_elem = doc.at_xpath('xrd:XRD/xrd:Expires', ns)
+      unless exp_elem.nil?
+        data[:expires] = DateTime.strptime(exp_elem.content, DATETIME_FORMAT)
       end
 
-      subj_elem = doc.locate('XRD/Subject')
-      unless subj_elem.empty?
-        data[:subject] = subj_elem.first.text
+      subj_elem = doc.at_xpath('xrd:XRD/xrd:Subject', ns)
+      unless subj_elem.nil?
+        data[:subject] = subj_elem.content
       end
 
       aliases = []
-      doc.locate('XRD/Alias').each do |node|
-        aliases << node.text
+      doc.xpath('xrd:XRD/xrd:Alias', ns).each do |node|
+        aliases << node.content
       end
       data[:aliases] = aliases unless aliases.empty?
 
       properties = {}
-      doc.locate('XRD/Property').each do |node|
-        properties[node[:type]] = node.text
+      doc.xpath('xrd:XRD/xrd:Property', ns).each do |node|
+        properties[node[:type]] = node.children.empty? ? nil : node.content
       end
       data[:properties] = properties unless properties.empty?
 
       links = []
-      doc.locate('XRD/Link').each do |node|
+      doc.xpath('xrd:XRD/xrd:Link', ns).each do |node|
         link = {}
         LINK_ATTRS.each do |attr|
-          link[attr] = node[attr] if node.attributes.key?(attr)
+          link[attr] = node[attr.to_s] if node.key?(attr.to_s)
         end
         links << link
       end
