@@ -35,7 +35,7 @@ describe Entity do
   end
 
   context '#to_xml' do
-    it 'returns an Ox::Element' do
+    it 'returns an Nokogiri::XML::Element' do
       t = Entities::EntityTest.new({})
       t.to_xml.should be_an_instance_of Nokogiri::XML::Element
     end

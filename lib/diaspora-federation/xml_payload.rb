@@ -42,7 +42,7 @@ module DiasporaFederation
     #
     # @param [Nokogiri::XML::Element] xml payload XML root node
     # @return [Entity] re-constructed Entity instance
-    # @raise [ArgumentError] if the argument is not an {Ox::Element}
+    # @raise [ArgumentError] if the argument is not an {Nokogiri::XML::Element}
     # @raise [InvalidStructure] if the XML doesn't look like the wrapper XML
     # @raise [UnknownEntity] if the class for the entity contained inside the
     #   XML can't be found
@@ -60,7 +60,7 @@ module DiasporaFederation
 
     private
 
-    # @param [Ox::Element]
+    # @param [Nokogiri::XML::Element]
     def self.wrap_valid?(element)
       (element.name == 'XML' && !element.at_xpath('post').nil? &&
        !element.at_xpath('post').children.empty?)
@@ -86,7 +86,7 @@ module DiasporaFederation
     # Works recursively on nested Entities and Arrays thereof.
     #
     # @param [Class] entity class
-    # @param [Ox::Element] xml nodes
+    # @param [Nokogiri::XML::Element] xml nodes
     # @return [Entity] instance
     def self.populate_entity(klass, node)
       data = {}

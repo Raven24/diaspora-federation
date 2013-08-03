@@ -35,47 +35,45 @@ module DiasporaFederation; module WebFinger
     #   installations).
     attr_reader :searchable
 
-    # @note Concatenating spaces here to make sure the class strings actually are there,
-    #   and not just part of a longer, different string.
-    XPATHS = {
-      uid: '//*[contains(concat(" ", @class, " "), " uid ")]',
-      nickname: '//*[contains(concat(" ", @class, " "), " nickname ")]',
-      fn: '//*[contains(concat(" ", @class, " "), " fn ")]',
-      given_name: '//*[contains(concat(" ", @class, " "), " given_name ")]',
-      family_name: '//*[contains(concat(" ", @class, " "), " family_name ")]',
-      url: '//*[contains(concat(" ", @id, " "), " pod_location ")]',
-      photo: '//*[contains(concat(" ", @class, " "), " entity_photo ")]//*[contains(concat(" ", @class, " "), " photo ")]',
-      photo_medium: '//*[contains(concat(" ", @class, " "), " entity_photo_medium ")]//*[contains(concat(" ", @class, " "), " photo ")]',
-      photo_small: '//*[contains(concat(" ", @class, " "), " entity_photo_small ")]//*[contains(concat(" ", @class, " "), " photo ")]',
-      key: '//*[contains(concat(" ", @class, " "), " key ")]',
-      searchable: '//*[contains(concat(" ", @class, " "), " searchable ")]',
+    # CSS selectors for finding all the hCard fields
+    SELECTORS = {
+      uid:          '.uid',
+      nickname:     '.nickname',
+      fn:           '.fn',
+      given_name:   '.given_name',
+      family_name:  '.family_name',
+      url:          '#pod_location',
+      photo:        '.entity_photo .photo[src]',
+      photo_medium: '.entity_photo_medium .photo[src]',
+      photo_small:  '.entity_photo_small .photo[src]',
+      key:          '.key',
+      searchable:   '.searchable',
     }
 
     # Create the HTML string from the current HCard instance
     # @return [String] HTML string
     def to_html
-      doc = Ox::Document.new(encoding: 'UTF-8')
+      builder = Nokogiri::HTML::Builder.new() do |html|
+        #html.doc.create_internal_subset('html', nil, nil) # doctype
 
-      html = html_doc(doc)
+        html.html {
+          html.head {
+            html.meta(charset: 'UTF-8')
+            html.title(@full_name)
+          }
 
-      head = html_head(html)
-      body = html_body(html)
+          html.body {
+            html.div(id: 'content') {
+              html.h1(@full_name)
+              html.div(id: 'content_inner', class: 'entity_profile vcard author') {
+                html.h2('User profile')
+              }
+            }
+          }
+        }
+      end
 
-      cnt =  Ox::Element.new('div')
-      cnt['id'] = 'content'
-      body << cnt
-
-      h = Ox::Element.new('h1')
-      h << @full_name
-      cnt << h
-
-      c = Ox::Element.new('div')
-      c['id'] = 'content_inner'
-      c['class'] = 'entity_profile vcard author'
-      cnt << c
-
-      h2 = Ox::Element.new('h2')
-      h2 << 'User profile'
+      c = builder.doc.at_css('#content_inner')
 
       add_simple_property(c, :uid, 'uid', @guid)
       add_simple_property(c, :nickname, 'nickname', @nickname)
@@ -88,46 +86,28 @@ module DiasporaFederation; module WebFinger
       add_simple_property(c, :family_name, 'family_name', @last_name)
       #######################################
 
-      add_property(c, :url) do
-        el = Ox::Element.new('a')
-        el['id'] = 'pod_location'
-        el['class'] = 'url'
-        el['rel'] = 'me'
-        el['href'] = @url.to_s
-        el << @url.to_s
-        el
+      add_property(c, :url) do |html|
+        html.a(@url.to_s, id: 'pod_location', class: 'url', rel: 'me', href: @url.to_s)
       end
 
       # TODO refactor me!  ##################
-      add_property(c, :photo) do
-        el = Ox::Element.new('img')
-        el['class'] = 'photo avatar'
-        el['width'] = '300px'   # 'px' is wrong here!
-        el['height'] = '300px'  # 'px' is wrong here!
-        el['src'] = @photo_full_url.to_s
-        el
+      add_property(c, :photo) do |html|
+        # 'px' is wrong here!
+        html.img(class: 'photo avatar', width: '300px', height: '300px', src: @photo_full_url.to_s)
       end
 
-      add_property(c, :photo_medium) do
-        el = Ox::Element.new('img')
-        el['class'] = 'photo avatar'
-        el['width'] = '100px'   # 'px' is wrong here!
-        el['height'] = '100px'  # 'px' is wrong here!
-        el['src'] = @photo_medium_url.to_s
-        el
+      add_property(c, :photo_medium) do |html|
+        # 'px' is wrong here!
+        html.img(class: 'photo avatar', width: '100px', height: '100px', src: @photo_medium_url.to_s)
       end
 
-      add_property(c, :photo_small) do
-        el = Ox::Element.new('img')
-        el['class'] = 'photo avatar'
-        el['width'] = '50px'   # 'px' is wrong here!
-        el['height'] = '50px'  # 'px' is wrong here!
-        el['src'] = @photo_small_url.to_s
-        el
+      add_property(c, :photo_small) do |html|
+        # 'px' is wrong here!
+        html.img(class: 'photo avatar', width: '50px', height: '50px', src: @photo_small_url.to_s)
       end
       #######################################
 
-      Ox.dump(doc)
+      builder.doc.to_xhtml(indent: 2, indent_text: ' ')
     end
 
     # Creates a new HCard instance from the given Hash containing account data
@@ -164,24 +144,24 @@ module DiasporaFederation; module WebFinger
     def self.from_html(html_string)
       raise ArgumentError unless html_string.instance_of?(String)
 
-      doc = LibXML::XML::HTMLParser.string(html_string).parse
+      doc = Nokogiri::HTML::Document.parse(html_string)
       raise InvalidData unless html_document_complete?(doc)
 
       hc = self.allocate
       hc.instance_eval {
-        @guid             = doc.find(XPATHS[:uid]).first.content
-        @nickname         = doc.find(XPATHS[:nickname]).first.content
-        @full_name        = doc.find(XPATHS[:fn]).first.content
-        @url              = doc.find(XPATHS[:url]).first['href']
-        @photo_full_url   = doc.find(XPATHS[:photo]).first['src']
-        @photo_medium_url = doc.find(XPATHS[:photo_medium]).first['src']
-        @photo_small_url  = doc.find(XPATHS[:photo_small]).first['src']
-        @pubkey           = doc.find(XPATHS[:key]).first.content unless doc.find(XPATHS[:key]).empty?
-        @searchable       = doc.find(XPATHS[:searchable]).first.content
+        @guid             = doc.at_css(SELECTORS[:uid]).content
+        @nickname         = doc.at_css(SELECTORS[:nickname]).content
+        @full_name        = doc.at_css(SELECTORS[:fn]).content
+        @url              = doc.at_css(SELECTORS[:url])['href']
+        @photo_full_url   = doc.at_css(SELECTORS[:photo])['src']
+        @photo_medium_url = doc.at_css(SELECTORS[:photo_medium])['src']
+        @photo_small_url  = doc.at_css(SELECTORS[:photo_small])['src']
+        @pubkey           = doc.at_css(SELECTORS[:key]).content unless doc.at_css(SELECTORS[:key]).nil?
+        @searchable       = doc.at_css(SELECTORS[:searchable]).content
 
         # TODO change me!  ####################
-        @first_name       = doc.find(XPATHS[:given_name]).first.content
-        @last_name        = doc.find(XPATHS[:family_name]).first.content
+        @first_name       = doc.at_css(SELECTORS[:given_name]).content
+        @last_name        = doc.at_css(SELECTORS[:family_name]).content
         #######################################
       }
       hc
@@ -189,80 +169,34 @@ module DiasporaFederation; module WebFinger
 
     private
 
-    # Create a +HTML+ element inside the given document.
-    # @params [Ox::Document] doc document
-    # @return [Ox::Element] HTML element
-    def html_doc(doc)
-      dt = Ox::DocType.new('html')
-      doc << dt
-
-      html = Ox::Element.new('html')
-      doc << html
-
-      html
-    end
-
-    # Create a +HEAD+ element inside the given html element
-    # @param [Ox::Element] html HTML element
-    # @return [Ox::Element] HEAD element
-    def html_head(html)
-      head = Ox::Element.new('head')
-      html << head
-
-      meta = Ox::Element.new('meta')
-      meta['charset'] = 'UTF-8'
-      head << meta
-
-      title = Ox::Element.new('title')
-      title << @full_name
-      head << title
-
-      head
-    end
-
-    # Create a +BODY+ element inside the given html element
-    # @param [Ox::Element] html HTML element
-    # @return [Ox::Element] BODY element
-    def html_body(html)
-      body = Ox::Element.new('body')
-      html << body
-
-      body
-    end
-
     # Add a property to the hCard document. The element will be added to the given
     # container element and a "definition list" structure will be created around
-    # it. Expects a block returning an Ox::Element with the property specified in
-    # the HTML element.
-    # @param container [Ox::Element] parent element for added property HTML
+    # it. A Nokogiri::HTML::Builder instance will be passed to the given block,
+    # which should be used to add the element(s) containing the property data.
+    #
+    # @param container [Nokogiri::XML::Element] parent element for added property HTML
     # @param name [Symbol] property name
     # @param block [Proc] block returning an element
     def add_property(container, name, &block)
-      wrap = Ox::Element.new('dl')
-      wrap['class'] = "entity_#{name.to_s}"
-      container << wrap
-
-      title = Ox::Element.new('dt')
-      title << name.to_s.capitalize
-      wrap << title
-
-      data = Ox::Element.new('dd')
-      data << block.call
-      wrap << data
+      Nokogiri::HTML::Builder.with(container) do |html|
+        html.dl(class: "entity_#{name.to_s}") {
+          html.dt(name.to_s.capitalize)
+          html.dd {
+            block.call(html)
+          }
+        }
+      end
     end
 
     # Calls {HCard#add_property} for a simple text property.
-    # @param container [Ox::Element] parent element
+    # @param container [Nokogiri::XML::Element] parent element
     # @param name [Symbol] property name
     # @param class_name [String] HTML class name
     # @param value [#to_s] property value
     # @see HCard#add_property
     def add_simple_property(container, name, class_name, value)
-      add_property(container, name) do
-        el = Ox::Element.new('span')
-        el['class'] = class_name
-        el << value.to_s
-        el
+      add_property(container, name) do |html|
+        html.span(value.to_s, class: class_name)
       end
     end
 
@@ -286,8 +220,8 @@ module DiasporaFederation; module WebFinger
     # @param [LibXML::XML::Document] doc HTML document
     # @return [Boolean] validation result
     def self.html_document_complete?(doc)
-      (! (doc.find(XPATHS[:fn]).empty? || doc.find(XPATHS[:nickname]).empty? ||
-          doc.find(XPATHS[:url]).empty? || doc.find(XPATHS[:photo]).empty? ))
+      (! (doc.at_css(SELECTORS[:fn]).nil? || doc.at_css(SELECTORS[:nickname]).nil? ||
+          doc.at_css(SELECTORS[:url]).nil? || doc.at_css(SELECTORS[:photo]).nil? ))
     end
     private_class_method :html_document_complete?
 

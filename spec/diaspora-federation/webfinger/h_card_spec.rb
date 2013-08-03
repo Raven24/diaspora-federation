@@ -14,17 +14,18 @@ describe WebFinger::HCard do
   let(:searchable) { true }
 
   let(:html) { <<-HTML
-
-<!DOCTYPE html >
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta charset="UTF-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta charset="UTF-8" />
     <title>#{name}</title>
   </head>
   <body>
     <div id="content">
       <h1>#{name}</h1>
       <div id="content_inner" class="entity_profile vcard author">
+        <h2>User profile</h2>
         <dl class="entity_uid">
           <dt>Uid</dt>
           <dd>
@@ -76,19 +77,19 @@ describe WebFinger::HCard do
         <dl class="entity_photo">
           <dt>Photo</dt>
           <dd>
-            <img class="photo avatar" width="300px" height="300px" src="#{photo_url}"/>
+            <img class="photo avatar" width="300px" height="300px" src="#{photo_url}" />
           </dd>
         </dl>
         <dl class="entity_photo_medium">
           <dt>Photo_medium</dt>
           <dd>
-            <img class="photo avatar" width="100px" height="100px" src="#{photo_url_m}"/>
+            <img class="photo avatar" width="100px" height="100px" src="#{photo_url_m}" />
           </dd>
         </dl>
         <dl class="entity_photo_small">
           <dt>Photo_small</dt>
           <dd>
-            <img class="photo avatar" width="50px" height="50px" src="#{photo_url_s}"/>
+            <img class="photo avatar" width="50px" height="50px" src="#{photo_url_s}" />
           </dd>
         </dl>
       </div>
