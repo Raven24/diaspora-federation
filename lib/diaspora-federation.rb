@@ -12,16 +12,6 @@ module DiasporaFederation
   # XML namespace url
   XMLNS = 'https://joindiaspora.com/protocol'
 
-  # ensure the given string has got an xml prolog (primitively)
-  # @param [String] Salmon XML
-  # @return [String] Salmon XML, guaranteed with xml prolog
-  def self.ensure_xml_prolog(xml_str)
-    if xml_str.index('<?xml').nil?
-      return '<?xml version="1.0" encoding="UTF-8"?>' + "\n" + xml_str
-    end
-
-    xml_str
-  end
 end
 
 require 'diaspora-federation/validators'
