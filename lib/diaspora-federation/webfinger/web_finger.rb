@@ -9,6 +9,25 @@ module DiasporaFederation; module WebFinger
   # In the meantime an actual RFC draft has been in development, which should
   # serve as a base for all future changes of this implementation.
   #
+  # @example Creating a WebFinger document from account data
+  #   wf = WebFinger.from_account({
+  #     acct_uri:    'acct:user@server.example',
+  #     alias_url:   'https://server.example/people/0123456789abcdef',
+  #     hcard_url:   'https://server.example/hcard/users/user',
+  #     seed_url:    'https://server.example/',
+  #     profile_url: 'https://server.example/u/user',
+  #     updates_url: 'https://server.example/public/user.atom',
+  #     guid:        '0123456789abcdef',
+  #     pubkey:      'ABCDEF=='
+  #   })
+  #   xml_string = wf.to_xml
+  #
+  # @example Creating a WebFinger instance from an xml document
+  #   wf = WebFinger.from_xml(xml_string)
+  #   ...
+  #   hcard_url = wf.hcard_url
+  #   ...
+  #
   # @see http://tools.ietf.org/html/draft-jones-appsawg-webfinger "WebFinger" -
   #   current draft
   # @see http://code.google.com/p/webfinger/wiki/CommonLinkRelations

@@ -12,7 +12,29 @@ module DiasporaFederation; module WebFinger
   #
   # @todo This needs some radical restructuring. The generated HTML is not
   #   correctly nested according to the hCard standard and class names are
-  #   partially wrong. Apart from that, it's just ugly.
+  #   partially wrong. Also, apart from that, it's just ugly.
+  #
+  # @example Creating a hCard document from account data
+  #   hc = HCard.from_account({
+  #     guid:             '0123456789abcdef',
+  #     diaspora_handle:  'user@server.example',
+  #     full_name:        'User Name',
+  #     url:              'https://server.example/',
+  #     photo_full_url:   'https://server.example/uploads/f.jpg',
+  #     photo_medium_url: 'https://server.example/uploads/m.jpg',
+  #     photo_small_url:  'https://server.example/uploads/s.jpg',
+  #     pubkey:           'ABCDEF==',
+  #     searchable:       true,
+  #     first_name:       'User',
+  #     last_name:        'Name'
+  #   })
+  #   html_string = hc.to_html
+  #
+  # @example Create a HCard instance from an hCard document
+  #   hc = HCard.from_html(html_string)
+  #   ...
+  #   full_name = hc.full_name
+  #   ...
   #
   # @see http://microformats.org/wiki/hCard "hCard 1.0"
   # @see http://microformats.org/wiki/h-card "h-card" (draft)
