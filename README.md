@@ -108,4 +108,56 @@ See the included documentation for specifics on how to use them.
 
 ### message passing
 
-(TODO)
+Messages are transmitted among Diaspora servers using the *push* principle.
+In almost all cases, user interactions cause federation messages to be created,
+which need to be sent to remote servers. For communication between servers, an
+encrypted transport (HTTPS) is mandatory.
+
+The various message payloads reflect the user actions as XML objects. Before
+these are passed to remote systems they need to be enveloped in so-called
+{DiasporaFederation::Salmon::Slap Salmon XML Slaps}, which contain a signature
+to verify the authorship of any given user action and also provide the means for
+encryption of private contents.
+
+Unencrypted message variants are meant to be delivered to "the receiving server"
+(in contrast to delivery to a specific user). They contain information which is
+meant to be processed as public, and need no further asymmetric encryption (in
+addition to the established transport encryption).
+
+All other messages are enveloped in
+{DiasporaFederation::Salmon::EncryptedSlap encrypted Salmon Slaps} using the
+recipients public RSA key. During delivery to remote servers, a specific route
+is used for posting the messages to directly indicate the recipient.
+
+**Example:** public message request
+
+    POST /receive/public HTTP/1.1
+    User-Agent: Diaspora w.x.y.z - https://diasporafoundation.org/
+    Content-Type: application/x-www-form-urlencoded
+
+    xml=[URLENCODED_DATA]
+
+**Example:** private message request
+
+    POST /receive/users/[GUID] HTTP/1.1
+    User-Agent: Diaspora w.x.y.z - https://diasporafoundation.org/
+    Content-Type: application/x-www-form-urlencoded
+
+    xml=[URLENCODED_DATA]
+
+Note the different route in comparison with the public message. It contains the
+recipient GUID to immediately tell the receiving server which user to deliver the
+message to, thus determining which private key to use for decryption.
+
+If the server implementation decides that the received message can be accepted,
+the response should indicate that by returning a 2xx HTTP status code.
+
+**Example:** public/private message response
+
+    HTTP/1.1 200 OK
+    Status: 200 OK
+
+A status code in the 3xx range indicates a redirect and a given URL in the
+`Location` header field should be followed.
+4xx and 5xx status codes are errors and the server implementation may choose to
+retry the request to the destination at a later time.

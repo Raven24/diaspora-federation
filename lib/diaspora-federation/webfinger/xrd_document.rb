@@ -4,7 +4,9 @@ module DiasporaFederation; module WebFinger
   # This class implements basic handling of XRD documents as far as it is
   # necessary in the context of the protocols used with Diaspora* federation.
   #
-  # @note Implementing +XrdDocument#to_json+ and +XrdDocument.json_data+ should
+  # @note {http://tools.ietf.org/html/rfc6415 RFC 6415} recommends that servers
+  #   should also offer the JRD format in addition to the XRD representation.
+  #   Implementing +XrdDocument#to_json+ and +XrdDocument.json_data+ should
   #   be almost trivial due to the simplicity of the format and the way the data
   #   is stored internally already. See
   #   {http://tools.ietf.org/html/rfc6415#appendix-A RFC 6415, Appendix A}
