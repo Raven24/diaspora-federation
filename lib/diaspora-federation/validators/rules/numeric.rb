@@ -1,8 +1,11 @@
 module Validation; module Rule
   class Numeric
 
+    attr_reader :params
+
     # no parameters
     def initialize
+      @params = {}
     end
 
     def error_key
@@ -11,10 +14,6 @@ module Validation; module Rule
 
     def valid_value?(value)
       Float(value) != nil rescue false
-    end
-
-    def params
-      {}
     end
   end
 end; end

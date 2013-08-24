@@ -4,6 +4,8 @@ module Validation; module Rule
   # Only the "#" characters will be counted.
   class TagCount
 
+    attr_reader :params
+
     # @param [Hash] params
     # @option params [Fixnum] :maximum maximum allowed tag count
     def initialize(params)
@@ -20,10 +22,6 @@ module Validation; module Rule
 
     def valid_value?(value)
       value.count('#') <= params[:maximum]
-    end
-
-    def params
-      @params
     end
   end
 end; end
