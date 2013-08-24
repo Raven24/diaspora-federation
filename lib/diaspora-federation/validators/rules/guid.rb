@@ -1,8 +1,11 @@
 module Validation; module Rule
   class Guid
 
+    attr_reader :params
+
     # no parameters
     def initialize
+      @params = {}
     end
 
     def error_key
@@ -10,13 +13,9 @@ module Validation; module Rule
     end
 
     def valid_value?(value)
-      return false if !value.is_a?(String) || value.empty?
-      return true if value.length >= 16 && value.downcase =~ /[0-9a-f]+/
-      false
-    end
+      return false unless value.is_a?(String) && !value.empty?
 
-    def params
-      {}
+      value.length >= 16 && value.downcase =~ /[0-9a-f]+/
     end
   end
 end; end
