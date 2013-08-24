@@ -1,7 +1,11 @@
 module Validation; module Rule
   class RsaKey
+
+    attr_reader :params
+
     # no parameters
     def initialize
+      @params = {}
     end
 
     def error_key
@@ -11,10 +15,6 @@ module Validation; module Rule
     def valid_value?(value)
       (value.strip.start_with?("-----BEGIN RSA PUBLIC KEY-----") &&
        value.strip.end_with?("-----END RSA PUBLIC KEY-----"))
-    end
-
-    def params
-      {}
     end
   end
 end; end

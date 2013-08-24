@@ -4,6 +4,8 @@ module Validation; module Rule
   # The evaluated string is split at ";" and the result will be counted.
   class HandleCount
 
+    attr_reader :params
+
     # @param [Hash] params
     # @option params [Fixnum] :maximum maximum allowed handle count
     def initialize(params)
@@ -20,10 +22,6 @@ module Validation; module Rule
 
     def valid_value?(value)
       value.split(';').count <= params[:maximum]
-    end
-
-    def params
-      @params
     end
   end
 end; end

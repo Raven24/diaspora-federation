@@ -3,6 +3,8 @@ module Validation; module Rule
   # Rormat rule for validation using regular expressions
   class Format
 
+    attr_reader :params
+
     # initialize rule
     #
     # @param [Hash] params rule options
@@ -28,17 +30,14 @@ module Validation; module Rule
 
     def valid_value?(value)
       return true if value.empty? && params[:allow_blank]
-      result = false
-      if params[:with]
-        result = true if value.to_s =~ params[:with]
-      elsif params[:without]
-        result = true if value.to_s !~ params[:without]
-      end
-      result
-    end
 
-    def params
-      @params
+      if params[:with]
+        true if value.to_s =~ params[:with]
+      elsif params[:without]
+        true if value.to_s !~ params[:without]
+      else
+        false
+      end
     end
   end
 end; end
