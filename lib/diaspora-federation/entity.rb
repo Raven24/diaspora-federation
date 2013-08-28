@@ -15,6 +15,8 @@ module DiasporaFederation
   #   class MyEntity < Entity
   #     define_props do
   #       property :prop
+  #       property :optional, default: false
+  #       property :dynamic_default, default: -> { Time.now }
   #       entity :nested, NestedEntity
   #       entity :multiple, [OtherEntity]
   #     end
@@ -48,8 +50,13 @@ module DiasporaFederation
     # @param [Hash] data
     # @return [Entitiy] new instance
     def initialize(args)
-      raise ArgumentError.new("expected a Hash") unless args.is_a?(Hash)
-      args.each do |k,v|
+      raise ArgumentError, "expected a Hash" unless args.is_a?(Hash)
+      missing_props = self.class.missing_props(args)
+      unless missing_props.empty?
+        raise ArgumentError, "missing required properties: #{missing_props.join(', ')}"
+      end
+
+      self.class.default_props.merge(args).each do |k,v|
         instance_variable_set("@#{k}", v) if setable?(k, v)
       end
       freeze
@@ -86,7 +93,9 @@ module DiasporaFederation
     # @param [Proc] block
     # @return [void]
     def self.define_props(&block)
-      @class_props = PropertiesDSL.new(&block).get_properties
+      dsl = PropertiesDSL.new(&block)
+      @class_props = dsl.get_properties
+      @default_props = dsl.get_defaults
       instance_eval { attr_reader *@class_props.map { |p| p[:name] } }
     end
 
@@ -143,6 +152,19 @@ module DiasporaFederation
       end
 
       root_element
+    end
+
+    # Return array of missing required property names
+    def self.missing_props(args)
+      class_prop_names - @default_props.keys - args.keys
+    end
+
+    # Return a new hash of default values, with dynamic values
+    # resolved on each call
+    def self.default_props
+      @default_props.each_with_object({}) { |(name, prop), hsh|
+        hsh[name] = prop.respond_to?(:call) ? prop.call : prop
+      }
     end
 
     # some of this is from Rails "Inflector.demodulize" and "Inflector.undersore"
