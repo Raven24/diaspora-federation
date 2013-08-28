@@ -166,7 +166,6 @@ module DiasporaFederation
 
     def self.class_prop_names
       @class_prop_names ||= @class_props.map { |p| p[:name] }
-      @class_prop_names
     end
   end
 end

@@ -48,11 +48,9 @@ module DiasporaFederation
     end
 
     def type_valid?(type)
-      ((type.instance_of?(Array) &&
-        type.first.respond_to?(:ancestors) &&
-        type.first.ancestors.include?(Entity)) ||
-       (type.respond_to?(:ancestors) &&
-        type.ancestors.include?(Entity)))
+      [type].flatten.all? { |type|
+        type.respond_to?(:ancestors) && type.ancestors.include?(Entity)
+      }
     end
 
     # Raised, if the name is of an unexpected type
