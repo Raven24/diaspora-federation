@@ -4,12 +4,13 @@ class Entities::EntityTest < Entity
   define_props do
     property :test1
     property :test2
-    property :test3
+    property :test3, default: true
+    property :test4, default: -> { true }
   end
 end
 
 describe Entity do
-  let(:data) { { test1: 'asdf', test2: 1234, test3: false } }
+  let(:data) { { test1: 'asdf', test2: 1234, test3: false, test4: false } }
 
   specify { Entities::EntityTest.should be < Entity }
 
@@ -27,28 +28,49 @@ describe Entity do
     t.should be_frozen
   end
 
+  it 'checks for required properties' do
+    expect {
+      Entities::EntityTest.new({})
+    }.to raise_error ArgumentError, "missing required properties: test1, test2"
+  end
+
+  it 'sets the defaults' do
+    t = Entities::EntityTest.new(test1: 1, test2: 2)
+    t.to_h[:test3].should == true
+  end
+
+  it 'handles callable defaults' do
+    t = Entities::EntityTest.new(test1: 1, test2: 2)
+    t.to_h[:test4].should == true
+  end
+
+  it 'uses provided values over defaults' do
+    t = Entities::EntityTest.new(data)
+    t.to_h[:test3].should == false
+  end
+
   context '#to_h' do
     it 'returns a hash of the internal data' do
-      t = Entities::EntityTest.new({})
+      t = Entities::EntityTest.new(data)
       t.to_h.should include(:test1, :test2, :test3)
     end
   end
 
   context '#to_xml' do
     it 'returns an Nokogiri::XML::Element' do
-      t = Entities::EntityTest.new({})
+      t = Entities::EntityTest.new(data)
       t.to_xml.should be_an_instance_of Nokogiri::XML::Element
     end
 
     it 'has the root node named after the class (underscored)' do
-      t = Entities::EntityTest.new({})
+      t = Entities::EntityTest.new(data)
       t.to_xml.name.should eql("entity_test")
     end
 
     it 'contains nodes for each of the properties' do
-      t = Entities::EntityTest.new({})
+      t = Entities::EntityTest.new(data)
       t.to_xml.children.each do |node|
-        ['test1','test2','test3'].should include(node.name)
+        ['test1','test2','test3', 'test4'].should include(node.name)
       end
     end
   end

@@ -60,6 +60,14 @@ describe PropertiesDSL do
         p.map { |e| e[:name] }.should include(:test, :asdf, :zzzz)
         p.map { |e| e[:type].should eql(String) }
       end
+
+      it 'can accept default values' do
+        i = PropertiesDSL.new {
+          property :test, default: :foobar
+        }
+        d = i.get_defaults
+        d[:test].should == :foobar
+      end
     end
 
     context 'nested entities' do

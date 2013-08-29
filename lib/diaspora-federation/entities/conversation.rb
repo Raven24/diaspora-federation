@@ -4,7 +4,7 @@ module DiasporaFederation; module Entities
     define_props do
       property :guid
       property :subject
-      property :created_at
+      property :created_at, default: -> { Time.now.utc }
       entity :messages, [Entities::Message]
       property :diaspora_handle
       property :participant_handles

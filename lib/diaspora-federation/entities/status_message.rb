@@ -3,13 +3,13 @@ module DiasporaFederation; module Entities
 
     define_props do
       property :raw_message
-      entity :photos, [Entities::Photo]
-      entity :location, Entities::Location
+      entity :photos, [Entities::Photo], default: []
+      entity :location, Entities::Location, default: nil
       property :guid
       property :diaspora_handle
-      property :public
-      property :created_at
-      property :provider_display_name
+      property :public, default: false
+      property :created_at, default: -> { Time.now.utc }
+      property :provider_display_name, default: nil
     end
 
   end

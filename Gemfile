@@ -9,4 +9,8 @@ group :docs do
   gem 'redcarpet', '~> 2.3.0'
 end
 
+group :development do
+  gem 'pry'
+end
+
 gemspec

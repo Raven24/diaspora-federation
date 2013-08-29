@@ -7,7 +7,7 @@ module DiasporaFederation; module Entities
       property :parent_author_signature
       property :author_signature
       property :text
-      property :created_at
+      property :created_at, default: -> { Time.now.utc }
       property :diaspora_handle
       property :conversation_guid
     end
