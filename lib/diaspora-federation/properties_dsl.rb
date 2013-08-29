@@ -11,15 +11,19 @@ module DiasporaFederation
     # @param [Proc] block will be evaluated in the created instance
     def initialize(&block)
       @properties = []
+      @defaults = {}
       instance_eval(&block)
       @properties.freeze
+      @defaults.freeze
     end
 
     # Define a generic (string-type) property
     # @param [Symbol] name property name
-    def property(name)
-      raise InvalidName unless name_valid?(name)
-      @properties << { name: name, type: String }
+    # @param [Hash] opts further options
+    # @option opts [Object, #call] :default a default value, making the
+    #   property optional
+    def property(name, opts={})
+      define_property name, String, opts
     end
 
     # Define a property that should contain another Entity or an array of
@@ -27,20 +31,37 @@ module DiasporaFederation
     # @param [Symbol] name property name
     # @param [Entity, Array<Entity>] type Entity subclass or
     #                Array with exactly one Entity subclass constant inside
-    def entity(name, type)
-      raise InvalidName unless name_valid?(name)
+    # @param [Hash] opts further options
+    # @option opts [Object, #call] :default a default value, making the
+    #   property optional
+    def entity(name, type, opts={})
       raise InvalidType unless type_valid?(type)
-      @properties << { name: name, type: type }
+
+      define_property name, type, opts
     end
 
     # Returns an array of the previously defined properties, each property is
     # represented as a hash consisting of a name and a type
-    # @return [Array<Hash>] e.g. [{ name: Symbol, type: Type}, {...}, ...]
+    # @return [Array<Hash>] e.g. [{ name: Symbol, type: Type}, ...]
     def get_properties
       @properties
     end
 
+    # Returns a hash of default values for properties. Each key
+    # is a property name and each value either the default value
+    # or a callable returning the default value.
+    def get_defaults
+      @defaults
+    end
+
     protected
+
+    def define_property(name, type, opts={})
+      raise InvalidName unless name_valid?(name)
+
+      @properties << { name: name, type: type }
+      @defaults[name] = opts[:default] if opts.has_key? :default
+    end
 
     def name_valid?(name)
       (name.instance_of?(Symbol) ||
@@ -48,11 +69,9 @@ module DiasporaFederation
     end
 
     def type_valid?(type)
-      ((type.instance_of?(Array) &&
-        type.first.respond_to?(:ancestors) &&
-        type.first.ancestors.include?(Entity)) ||
-       (type.respond_to?(:ancestors) &&
-        type.ancestors.include?(Entity)))
+      [type].flatten.all? { |type|
+        type.respond_to?(:ancestors) && type.ancestors.include?(Entity)
+      }
     end
 
     # Raised, if the name is of an unexpected type
