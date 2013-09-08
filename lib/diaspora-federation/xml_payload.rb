@@ -101,10 +101,7 @@ module DiasporaFederation
         elsif type.instance_of?(Array)
           # collect all nested children of that type and create an array in the data hash
           n = node.xpath(type.first.entity_name)
-          data[name] = []
-          n.each do |child|
-            data[name] << populate_entity(type.first, child)
-          end if n.any?
+          data[name] = n.map { |child| populate_entity(type.first, child) }
         elsif type.ancestors.include?(Entity)
           # create an entry in the data hash for the nested entity
           n = node.xpath(type.entity_name)
