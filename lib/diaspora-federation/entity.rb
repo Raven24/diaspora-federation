@@ -65,11 +65,9 @@ module DiasporaFederation
     # Returns a Hash representing this Entity (attributes => values)
     # @return [Hash] entity data (mostly equal to the hash used for initialization).
     def to_h
-      out = {}
-      self.class.class_prop_names.map do |prop|
-        out[prop] = self.send(prop)
+      self.class.class_prop_names.each_with_object({}) do |prop, hash|
+        hash[prop] = self.send(prop)
       end
-      out
     end
 
     # Returns the XML representation for this entity constructed out of
@@ -105,11 +103,9 @@ module DiasporaFederation
       prop_def = self.class.class_props.detect { |p| p[:name] == name }
       return false if prop_def.nil? # property undefined
 
-      return true if setable_string?(prop_def, val) ||
-                     setable_nested?(prop_def, val) ||
-                     setable_multi?(prop_def, val)
-
-      false
+      setable_string?(prop_def, val) ||
+      setable_nested?(prop_def, val) ||
+      setable_multi?(prop_def, val)
     end
 
     def setable_string?(definition, val)
@@ -145,8 +141,8 @@ module DiasporaFederation
           root_element << node
         else
           # call #to_xml for each item and append to root
-          [*send(name)].each do |item|
-            root_element << item.to_xml unless item.nil?
+          [*send(name)].compact.each do |item|
+            root_element << item.to_xml
           end
         end
       end
@@ -183,7 +179,6 @@ module DiasporaFederation
 
     def self.nested_class_props
       @nested_class_props ||= @class_props.select { |p| p[:type] != String }
-      @nested_class_props
     end
 
     def self.class_prop_names
