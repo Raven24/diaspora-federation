@@ -112,10 +112,10 @@ module DiasporaFederation; module Salmon
     # @return [String] Salmon XML string
     # @raise [ArgumentError] if any of the arguments is of the wrong type
     def self.generate_xml(author_id, pkey, entity, pubkey)
-      raise ArgumentError unless author_id.instance_of?(String) &&
-                                 pkey.instance_of?(OpenSSL::PKey::RSA) &&
-                                 entity.is_a?(Entity) &&
-                                 pubkey.instance_of?(OpenSSL::PKey::RSA)
+      fail ArgumentError, "#{author_id} is not a valid author_id" unless author_id.instance_of?(String)
+      fail ArgumentError, "#{pkey} is not a valid private key"    unless pkey.instance_of?(OpenSSL::PKey::RSA)
+      fail ArgumentError, "#{entity} is not a valid entity"       unless entity.is_a?(Entity)
+      fail ArgumentError, "#{pubkey} is not a valid public key"   unless pubkey.instance_of?(OpenSSL::PKey::RSA)
 
       doc = Nokogiri::XML::Document.new()
       doc.encoding = 'UTF-8'
