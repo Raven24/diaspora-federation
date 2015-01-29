@@ -4,8 +4,8 @@ describe Validators::ReshareValidator do
   it 'validates a well-formed instance' do
     c = OpenStruct.new(Fabricate.attributes_for(:reshare))
     v = Validators::ReshareValidator.new(c)
-    v.should be_valid
-    v.errors.should be_empty
+    expect(v).to be_valid
+    expect(v.errors).to be_empty
   end
 
   context '#root_diaspora_id, #diaspora_handle' do

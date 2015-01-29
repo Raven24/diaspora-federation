@@ -3,8 +3,8 @@ require 'spec_helper'
 describe Validators::CommentValidator do
   it 'validates a well-formed instance' do
     v = Validators::CommentValidator.new(OpenStruct.new(Fabricate.attributes_for(:comment)))
-    v.should be_valid
-    v.errors.should be_empty
+    expect(v).to be_valid
+    expect(v.errors).to be_empty
   end
 
   it_behaves_like 'a diaspora_handle validator' do
@@ -25,11 +25,11 @@ describe Validators::CommentValidator do
     [:author_signature, :parent_author_signature].each do |prop|
       it 'must not be empty' do
         comment = OpenStruct.new(Fabricate.attributes_for(:comment))
-        comment.public_send("#{prop.to_s}=", '')
+        comment.public_send("#{prop}=", '')
 
         v = Validators::CommentValidator.new(comment)
-        v.should_not be_valid
-        v.errors.should include(prop)
+        expect(v).to_not be_valid
+        expect(v.errors).to include(prop)
       end
     end
   end
@@ -37,16 +37,16 @@ describe Validators::CommentValidator do
   context '#text' do
     it 'must not be emtpy' do
       v = Validators::CommentValidator.new(OpenStruct.new(Fabricate.attributes_for(:comment, text: '')))
-      v.should_not be_valid
-      v.errors.should include(:text)
+      expect(v).to_not be_valid
+      expect(v.errors).to include(:text)
     end
 
     it 'must not exceed 65535 chars' do
       v = Validators::CommentValidator.new(
             OpenStruct.new(
-              Fabricate.attributes_for(:comment, text: 'a'*65536)))
-      v.should_not be_valid
-      v.errors.should include(:text)
+              Fabricate.attributes_for(:comment, text: 'a' * 65_536)))
+      expect(v).to_not be_valid
+      expect(v.errors).to include(:text)
     end
   end
 end

@@ -4,8 +4,8 @@ describe Validators::RelayableRetractionValidator do
   it 'validates a well-formed instance' do
     c = OpenStruct.new(Fabricate.attributes_for(:relayable_retraction))
     v = Validators::RelayableRetractionValidator.new(c)
-    v.should be_valid
-    v.errors.should be_empty
+    expect(v).to be_valid
+    expect(v.errors).to be_empty
   end
 
   it_behaves_like 'a diaspora_handle validator' do
@@ -24,11 +24,11 @@ describe Validators::RelayableRetractionValidator do
     [:parent_author_signature, :target_author_signature].each do |prop|
       it 'must not be empty' do
         r = OpenStruct.new(Fabricate.attributes_for(:relayable_retraction))
-        r.public_send("#{prop.to_s}=", '')
+        r.public_send("#{prop}=", '')
 
         v = Validators::RelayableRetractionValidator.new(r)
-        v.should_not be_valid
-        v.errors.should include(prop)
+        expect(v).to_not be_valid
+        expect(v.errors).to include(prop)
       end
     end
   end

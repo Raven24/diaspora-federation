@@ -1,12 +1,13 @@
-module DiasporaFederation; module Validators
-  class StatusMessageValidator < Validation::Validator
-    include Validation
+module DiasporaFederation
+  module Validators
+    class StatusMessageValidator < Validation::Validator
+      include Validation
 
-    rule :guid, :guid
+      rule :guid, :guid
 
-    rule :diaspora_handle, [:not_empty, :email]
+      rule :diaspora_handle, [:not_empty, :email]
 
-    rule :public, :boolean
-
+      rule :public, :boolean
+    end
   end
-end; end
+end

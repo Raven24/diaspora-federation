@@ -1,5 +1,4 @@
 module DiasporaFederation
-
   # +Entity+ is the base class for all other objects used to encapsulate data
   # for federation messages in the Diaspora* network.
   # Entity fields are specified using a simple {PropertiesDSL DSL} as part of
@@ -50,13 +49,13 @@ module DiasporaFederation
     # @param [Hash] data
     # @return [Entitiy] new instance
     def initialize(args)
-      raise ArgumentError, "expected a Hash" unless args.is_a?(Hash)
+      fail ArgumentError, 'expected a Hash' unless args.is_a?(Hash)
       missing_props = self.class.missing_props(args)
       unless missing_props.empty?
-        raise ArgumentError, "missing required properties: #{missing_props.join(', ')}"
+        fail ArgumentError, "missing required properties: #{missing_props.join(', ')}"
       end
 
-      self.class.default_props.merge(args).each do |k,v|
+      self.class.default_props.merge(args).each do |k, v|
         instance_variable_set("@#{k}", v) if setable?(k, v)
       end
       freeze
@@ -66,7 +65,7 @@ module DiasporaFederation
     # @return [Hash] entity data (mostly equal to the hash used for initialization).
     def to_h
       self.class.class_prop_names.each_with_object({}) do |prop, hash|
-        hash[prop] = self.send(prop)
+        hash[prop] = send(prop)
       end
     end
 
@@ -92,9 +91,9 @@ module DiasporaFederation
     # @return [void]
     def self.define_props(&block)
       dsl = PropertiesDSL.new(&block)
-      @class_props = dsl.get_properties
-      @default_props = dsl.get_defaults
-      instance_eval { attr_reader *@class_props.map { |p| p[:name] } }
+      @class_props = dsl.properties
+      @default_props = dsl.defaults
+      instance_eval { attr_reader(*@class_props.map { |p| p[:name] }) }
     end
 
     private
@@ -104,8 +103,8 @@ module DiasporaFederation
       return false if prop_def.nil? # property undefined
 
       setable_string?(prop_def, val) ||
-      setable_nested?(prop_def, val) ||
-      setable_multi?(prop_def, val)
+        setable_nested?(prop_def, val) ||
+        setable_multi?(prop_def, val)
     end
 
     def setable_string?(definition, val)
@@ -158,21 +157,21 @@ module DiasporaFederation
     # Return a new hash of default values, with dynamic values
     # resolved on each call
     def self.default_props
-      @default_props.each_with_object({}) { |(name, prop), hsh|
+      @default_props.each_with_object({}) do |(name, prop), hsh|
         hsh[name] = prop.respond_to?(:call) ? prop.call : prop
-      }
+      end
     end
 
     # some of this is from Rails "Inflector.demodulize" and "Inflector.undersore"
     def self.entity_name
-      word = self.name.dup
+      word = name.dup
       if (i = word.rindex('::'))
-        word = word[(i+2)..-1]
+        word = word[(i + 2)..-1]
       end
       word.gsub!('::', '/')
-      word.gsub!(/([A-Z\d]+)([A-Z][a-z])/,'\1_\2')
-      word.gsub!(/([a-z\d])([A-Z])/,'\1_\2')
-      word.tr!("-", "_")
+      word.gsub!(/([A-Z\d]+)([A-Z][a-z])/, '\1_\2')
+      word.gsub!(/([a-z\d])([A-Z])/, '\1_\2')
+      word.tr!('-', '_')
       word.downcase!
       word
     end

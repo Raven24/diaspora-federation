@@ -2,13 +2,16 @@ require 'spec_helper'
 
 describe Entities::Person do
   let(:profile) { Entities::Profile.new(Fabricate.attributes_for(:profile)) }
-  let(:data) { {guid: Fabricate.sequence(:guid),
-                diaspora_handle: Fabricate.sequence(:diaspora_handle),
-                url: 'https://d.example.tld/',
-                profile: profile,
-                exported_key: "-----BEGIN RSA PUBLIC KEY-----\nAAAAAA==\n-----END RSA PUBLIC KEY-----\n"} }
+  let(:data) do
+    { guid: Fabricate.sequence(:guid),
+      diaspora_handle: Fabricate.sequence(:diaspora_handle),
+      url: 'https://d.example.tld/',
+      profile: profile,
+      exported_key: "-----BEGIN RSA PUBLIC KEY-----\nAAAAAA==\n-----END RSA PUBLIC KEY-----\n" }
+  end
 
-  let(:xml) { <<-XML
+  let(:xml) do
+    <<-XML
 <person>
   <guid>#{data[:guid]}</guid>
   <diaspora_handle>#{data[:diaspora_handle]}</diaspora_handle>
@@ -31,9 +34,9 @@ describe Entities::Person do
   <exported_key>#{data[:exported_key]}</exported_key>
 </person>
 XML
-  }
+  end
 
-  it_behaves_like "an Entity subclass" do
-   let(:klass) { Entities::Person }
+  it_behaves_like 'an Entity subclass' do
+    let(:klass) { Entities::Person }
   end
 end

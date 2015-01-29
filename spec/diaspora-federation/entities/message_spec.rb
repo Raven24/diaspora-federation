@@ -3,7 +3,8 @@ require 'spec_helper'
 describe Entities::Message do
   let(:data) { Fabricate.attributes_for(:message) }
 
-  let(:xml) { <<-XML
+  let(:xml) do
+    <<-XML
 <message>
   <guid>#{data[:guid]}</guid>
   <parent_guid>#{data[:parent_guid]}</parent_guid>
@@ -15,9 +16,9 @@ describe Entities::Message do
   <conversation_guid>#{data[:conversation_guid]}</conversation_guid>
 </message>
 XML
-  }
+  end
 
-  it_behaves_like "an Entity subclass" do
+  it_behaves_like 'an Entity subclass' do
     let(:klass) { Entities::Message }
   end
 end

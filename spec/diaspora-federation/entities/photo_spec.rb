@@ -1,10 +1,10 @@
 require 'spec_helper'
 
 describe Entities::Photo do
-
   let(:data) { Fabricate.attributes_for(:photo) }
 
-  let(:xml) { <<-XML
+  let(:xml) do
+    <<-XML
 <photo>
   <guid>#{data[:guid]}</guid>
   <diaspora_handle>#{data[:diaspora_handle]}</diaspora_handle>
@@ -18,9 +18,9 @@ describe Entities::Photo do
   <width>#{data[:width]}</width>
 </photo>
 XML
-  }
+  end
 
-  it_behaves_like "an Entity subclass" do
+  it_behaves_like 'an Entity subclass' do
     let(:klass) { Entities::Photo }
   end
 end

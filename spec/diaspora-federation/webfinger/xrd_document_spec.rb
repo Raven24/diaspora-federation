@@ -1,7 +1,8 @@
 require 'spec_helper'
 
 describe WebFinger::XrdDocument do
-  let(:xml) { <<XML
+  let(:xml) do
+    <<XML
 <?xml version="1.0" encoding="UTF-8"?>
 <XRD xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0">
   <Expires>2010-01-30T09:30:00Z</Expires>
@@ -15,37 +16,39 @@ describe WebFinger::XrdDocument do
   <Link rel="copyright" template="http://example.com/copyright?id={uri}"/>
 </XRD>
 XML
-  }
+  end
 
-  let(:data) { {
-    subject: "http://blog.example.com/article/id/314",
-    expires: DateTime.parse("2010-01-30T09:30:00Z"),
-    aliases: [
-      "http://blog.example.com/cool_new_thing",
-      "http://blog.example.com/steve/article/7"
-    ],
-    properties: {
-      "http://blgx.example.net/ns/version" => "1.3",
-      "http://blgx.example.net/ns/ext" => nil
-    },
-    links: [
-      {
-        rel: "author",
-        type: "text/html",
-        href: "http://blog.example.com/author/steve"
+  let(:data) do
+    {
+      subject: 'http://blog.example.com/article/id/314',
+      expires: DateTime.parse('2010-01-30T09:30:00Z'),
+      aliases: [
+        'http://blog.example.com/cool_new_thing',
+        'http://blog.example.com/steve/article/7'
+      ],
+      properties: {
+        'http://blgx.example.net/ns/version' => '1.3',
+        'http://blgx.example.net/ns/ext' => nil
       },
-      {
-        rel: "author",
-        href: "http://example.com/author/john"
-      },
-      {
-        rel: "copyright",
-        template: "http://example.com/copyright?id={uri}"
-      }
-    ]
-  } }
+      links: [
+        {
+          rel: 'author',
+          type: 'text/html',
+          href: 'http://blog.example.com/author/steve'
+        },
+        {
+          rel: 'author',
+          href: 'http://example.com/author/john'
+        },
+        {
+          rel: 'copyright',
+          template: 'http://example.com/copyright?id={uri}'
+        }
+      ]
+    }
+  end
 
-  let(:doc) {
+  let(:doc) do
     d = WebFinger::XrdDocument.new
     d.expires = data[:expires]
     d.subject = data[:subject]
@@ -63,14 +66,14 @@ XML
     end
 
     d
-  }
+  end
 
   it 'creates the xml document' do
-    doc.to_xml.should eql(xml)
+    expect(doc.to_xml).to eql(xml)
   end
 
   it 'reads the xml document' do
     d = WebFinger::XrdDocument.xml_data(xml)
-    d.should eql(data)
+    expect(d).to eql(data)
   end
 end

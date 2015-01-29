@@ -1,14 +1,17 @@
 require 'spec_helper'
 
 describe Entities::Comment do
-  let(:data) { {guid: '0123456789abcdef',
-                parent_guid: 'fedcba987654321',
-                parent_author_signature: 'BBBBBB==',
-                author_signature: 'AAAAAA==',
-                text: 'my comment text',
-                diaspora_handle: 'bob@pod.somedomain.tld'} }
+  let(:data) do
+    { guid: '0123456789abcdef',
+      parent_guid: 'fedcba987654321',
+      parent_author_signature: 'BBBBBB==',
+      author_signature: 'AAAAAA==',
+      text: 'my comment text',
+      diaspora_handle: 'bob@pod.somedomain.tld' }
+  end
 
-  let(:xml) { <<-XML
+  let(:xml) do
+    <<-XML
 <comment>
   <guid>0123456789abcdef</guid>
   <parent_guid>fedcba987654321</parent_guid>
@@ -18,9 +21,9 @@ describe Entities::Comment do
   <diaspora_handle>bob@pod.somedomain.tld</diaspora_handle>
 </comment>
 XML
-  }
+  end
 
-  it_behaves_like "an Entity subclass" do
+  it_behaves_like 'an Entity subclass' do
     let(:klass) { Entities::Comment }
   end
 end

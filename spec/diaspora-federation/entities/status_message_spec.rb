@@ -4,16 +4,19 @@ describe Entities::StatusMessage do
   let(:photo1) { Entities::Photo.new(Fabricate.attributes_for(:photo)) }
   let(:photo2) { Entities::Photo.new(Fabricate.attributes_for(:photo)) }
   let(:location) { Entities::Location.new(Fabricate.attributes_for(:location)) }
-  let(:data) { {raw_message: 'this is such an interesting text',
-                photos: [photo1, photo2],
-                location: location,
-                guid: Fabricate.sequence(:guid),
-                diaspora_handle: Fabricate.sequence(:diaspora_handle),
-                public: true,
-                created_at: DateTime.now,
-                provider_display_name: 'something'} }
+  let(:data) do
+    { raw_message: 'this is such an interesting text',
+      photos: [photo1, photo2],
+      location: location,
+      guid: Fabricate.sequence(:guid),
+      diaspora_handle: Fabricate.sequence(:diaspora_handle),
+      public: true,
+      created_at: DateTime.now,
+      provider_display_name: 'something' }
+  end
 
-  let(:xml) { <<-XML
+  let(:xml) do
+    <<-XML
 <status_message>
   <raw_message>#{data[:raw_message]}</raw_message>
   <photo>
@@ -52,9 +55,9 @@ describe Entities::StatusMessage do
   <provider_display_name>#{data[:provider_display_name]}</provider_display_name>
 </status_message>
 XML
-  }
+  end
 
-  it_behaves_like "an Entity subclass" do
+  it_behaves_like 'an Entity subclass' do
     let(:klass) { Entities::StatusMessage }
   end
 end

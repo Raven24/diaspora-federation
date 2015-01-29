@@ -2,11 +2,11 @@ require 'spec_helper'
 
 shared_examples 'an Entity subclass' do
   it 'should be an Entity' do
-    klass.should be < Entity
+    expect(klass).to be < Entity
   end
 
   it 'has its properties set' do
-    klass.class_prop_names.should include(*data.keys)
+    expect(klass.class_prop_names).to include(*data.keys)
   end
 
   context 'behaviour' do
@@ -14,13 +14,13 @@ shared_examples 'an Entity subclass' do
 
     context '#to_h' do
       it 'should resemble the input data' do
-        instance.to_h.should eql(data)
+        expect(instance.to_h).to eql(data)
       end
     end
 
     context '#to_xml' do
       it 'produces correct XML' do
-        instance.to_xml.to_s.should eql(xml.strip)
+        expect(instance.to_xml.to_s).to eql(xml.strip)
       end
     end
   end

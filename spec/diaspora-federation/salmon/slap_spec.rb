@@ -13,7 +13,7 @@ describe Salmon::Slap do
       end
 
       it 'raises an error when the params are the wrong type' do
-        ['asdf', 12345, true, :symbol, entity, pkey].each do |val|
+        ['asdf', 12_345, true, :symbol, entity, pkey].each do |val|
           expect { Salmon::Slap.generate_xml(val, val, val) }.to raise_error
         end
       end
@@ -22,9 +22,9 @@ describe Salmon::Slap do
     it 'generates valid xml' do
       ns = { 'd' => DiasporaFederation::XMLNS, 'me' => Salmon::MagicEnvelope::XMLNS }
       doc = Nokogiri::XML::Document.parse(slap)
-      doc.root.name.should eql('diaspora')
-      doc.at_xpath('d:diaspora/d:header/d:author_id', ns).content.should eql(author_id)
-      doc.xpath('d:diaspora/me:env', ns).should have(1).item
+      expect(doc.root.name).to eql('diaspora')
+      expect(doc.at_xpath('d:diaspora/d:header/d:author_id', ns).content).to eql(author_id)
+      expect(doc.xpath('d:diaspora/me:env', ns).length).to eq(1)
     end
   end
 
@@ -35,7 +35,7 @@ describe Salmon::Slap do
       end
 
       it 'raises an error when the param has a wrong type' do
-        [12345, false, :symbol, entity, pkey].each do |val|
+        [12_345, false, :symbol, entity, pkey].each do |val|
           expect { Salmon::Slap.from_xml(val) }.to raise_error
         end
       end
@@ -46,9 +46,9 @@ describe Salmon::Slap do
   <header/>
 </diaspora>
 XML
-        expect {
+        expect do
           Salmon::Slap.from_xml(faulty_xml)
-        }.to raise_error Salmon::Slap::MissingAuthor
+        end.to raise_error Salmon::Slap::MissingAuthor
       end
 
       it 'verifies the existence of a magic envelope' do
@@ -59,15 +59,15 @@ XML
   </header>
 </diaspora>
 XML
-        expect {
+        expect do
           Salmon::Slap.from_xml(faulty_xml)
-        }.to raise_error Salmon::MissingMagicEnvelope
+        end.to raise_error Salmon::MissingMagicEnvelope
       end
     end
   end
 
   context 'generated instance' do
-    it_behaves_like "a Slap instance" do
+    it_behaves_like 'a Slap instance' do
       subject { Salmon::Slap.from_xml(slap) }
     end
   end

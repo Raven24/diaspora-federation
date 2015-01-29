@@ -1,6 +1,5 @@
 
 module DiasporaFederation
-
   # This module contains a Diaspora*-specific implementation of parts of the
   # {http://www.salmon-protocol.org/ Salmon Protocol}.
   module Salmon
@@ -19,7 +18,7 @@ module DiasporaFederation
       iv = cipher.random_iv
       ciphertext = cipher.update(data) + cipher.final
 
-      enc = [ key, iv, ciphertext ].map { |i| Base64.strict_encode64(i) }
+      enc = [key, iv, ciphertext].map { |i| Base64.strict_encode64(i) }
 
       { key: enc[0],
         iv:  enc[1],

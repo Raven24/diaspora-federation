@@ -9,7 +9,7 @@
 require 'coveralls'
 Coveralls.wear!
 
-require 'diaspora-federation'
+require 'diaspora_federation'
 require 'ostruct'
 require 'fabrication'
 
@@ -21,28 +21,29 @@ require 'diaspora-federation/validators/shared_validator_specs'
 
 include DiasporaFederation
 
-class Entities::TestEntity < Entity
-  define_props do
-    property :test
+module Entities
+  class TestEntity < Entity
+    define_props do
+      property :test
+    end
   end
-end
 
-class Entities::OtherEntity < Entity
-  define_props do
-    property :asdf
+  class OtherEntity < Entity
+    define_props do
+      property :asdf
+    end
   end
-end
 
-class Entities::TestNestedEntity < Entity
-  define_props do
-    property :asdf
-    entity :test, TestEntity
-    entity :multi, [OtherEntity]
+  class TestNestedEntity < Entity
+    define_props do
+      property :asdf
+      entity :test, TestEntity
+      entity :multi, [OtherEntity]
+    end
   end
 end
 
 RSpec.configure do |config|
-  config.treat_symbols_as_metadata_keys_with_true_values = true
   config.run_all_when_everything_filtered = true
   config.filter_run :focus
 

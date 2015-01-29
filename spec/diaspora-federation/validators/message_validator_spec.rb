@@ -4,8 +4,8 @@ describe Validators::MessageValidator do
   it 'validates a well-formed instance' do
     c = OpenStruct.new(Fabricate.attributes_for(:message))
     v = Validators::MessageValidator.new(c)
-    v.should be_valid
-    v.errors.should be_empty
+    expect(v).to be_valid
+    expect(v.errors).to be_empty
   end
 
   it_behaves_like 'a diaspora_handle validator' do
@@ -28,13 +28,12 @@ describe Validators::MessageValidator do
     [:author_signature, :parent_author_signature].each do |prop|
       it 'must not be empty' do
         msg = OpenStruct.new(Fabricate.attributes_for(:message))
-        msg.public_send("#{prop.to_s}=", '')
+        msg.public_send("#{prop}=", '')
 
         v = Validators::MessageValidator.new(msg)
-        v.should_not be_valid
-        v.errors.should include(prop)
+        expect(v).to_not be_valid
+        expect(v.errors).to include(prop)
       end
     end
   end
-
 end

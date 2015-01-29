@@ -1,22 +1,21 @@
 require 'spec_helper'
 
 describe Validation::Rule::Boolean do
-
   it 'will not accept parameters' do
     v = Validation::Validator.new({})
-    expect {
+    expect do
       v.rule(:number, numeric: { param: true })
-    }.to raise_error
+    end.to raise_error
   end
 
   context 'strings' do
     it 'validates boolean-esque strings' do
-      ['true', 'false', 'yes', 'no', 't', 'f', 'y', 'n', '1', '0'].each do |str|
+      %w(true false yes no t f y n 1 0).each do |str|
         v = Validation::Validator.new(OpenStruct.new(boolean: str))
         v.rule(:boolean, :boolean)
 
-        v.should be_valid
-        v.errors.should be_empty
+        expect(v).to be_valid
+        expect(v.errors).to be_empty
       end
     end
 
@@ -24,8 +23,8 @@ describe Validation::Rule::Boolean do
       v = Validation::Validator.new(OpenStruct.new(boolean: 'asdf'))
       v.rule(:boolean, :boolean)
 
-      v.should_not be_valid
-      v.errors.should include(:boolean)
+      expect(v).to_not be_valid
+      expect(v.errors).to include(:boolean)
     end
   end
 
@@ -35,8 +34,8 @@ describe Validation::Rule::Boolean do
         v = Validation::Validator.new(OpenStruct.new(boolean: num))
         v.rule(:boolean, :boolean)
 
-        v.should be_valid
-        v.errors.should be_empty
+        expect(v).to be_valid
+        expect(v.errors).to be_empty
       end
     end
 
@@ -44,8 +43,8 @@ describe Validation::Rule::Boolean do
       v = Validation::Validator.new(OpenStruct.new(boolean: 1234))
       v.rule(:boolean, :boolean)
 
-      v.should_not be_valid
-      v.errors.should include(:boolean)
+      expect(v).to_not be_valid
+      expect(v.errors).to include(:boolean)
     end
   end
 
@@ -55,8 +54,8 @@ describe Validation::Rule::Boolean do
         v = Validation::Validator.new(OpenStruct.new(boolean: bln))
         v.rule(:boolean, :boolean)
 
-        v.should be_valid
-        v.errors.should be_empty
+        expect(v).to be_valid
+        expect(v.errors).to be_empty
       end
     end
   end

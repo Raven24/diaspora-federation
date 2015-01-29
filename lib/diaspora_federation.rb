@@ -1,4 +1,3 @@
-
 # gems
 require 'nokogiri'
 require 'validation'
@@ -8,10 +7,8 @@ require 'json'
 
 # This is the main namespace used throughout this gem.
 module DiasporaFederation
-
   # XML namespace url
   XMLNS = 'https://joindiaspora.com/protocol'
-
 end
 
 require 'diaspora-federation/validators'

@@ -5,15 +5,18 @@ describe Entities::Reshare do
     @datetime = DateTime.now
   end
 
-  let(:data) { {root_diaspora_id: 'robert_root@pod.example.tld',
-                root_guid: 'fedcba9876543210',
-                guid: '0123456789abcdef',
-                diaspora_handle: 'alice@diaspora.domain.tld',
-                public: true,
-                created_at: @datetime,
-                provider_display_name: 'mobile'} }
+  let(:data) do
+    { root_diaspora_id: 'robert_root@pod.example.tld',
+      root_guid: 'fedcba9876543210',
+      guid: '0123456789abcdef',
+      diaspora_handle: 'alice@diaspora.domain.tld',
+      public: true,
+      created_at: @datetime,
+      provider_display_name: 'mobile' }
+  end
 
-  let(:xml) { <<-XML
+  let(:xml) do
+    <<-XML
 <reshare>
   <root_diaspora_id>robert_root@pod.example.tld</root_diaspora_id>
   <root_guid>fedcba9876543210</root_guid>
@@ -24,9 +27,9 @@ describe Entities::Reshare do
   <provider_display_name>mobile</provider_display_name>
 </reshare>
 XML
-  }
+  end
 
-  it_behaves_like "an Entity subclass" do
+  it_behaves_like 'an Entity subclass' do
     let(:klass) { Entities::Reshare }
   end
 end
