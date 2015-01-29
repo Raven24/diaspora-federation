@@ -11,6 +11,7 @@ end
 
 group :development do
   gem 'rspec', '~> 3.1'
+  gem 'rubocop'
   gem 'pry'
 end
 
