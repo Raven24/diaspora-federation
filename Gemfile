@@ -10,6 +10,7 @@ group :docs do
 end
 
 group :development do
+  gem 'rspec', '~> 3.1'
   gem 'pry'
 end
 
