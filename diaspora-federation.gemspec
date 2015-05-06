@@ -7,6 +7,7 @@ Gem::Specification.new do |s|
   s.name        = 'diaspora-federation'
   s.version     = DiasporaFederation::VERSION
   s.date        = '2013-06-28'
+  s.license     = 'MIT'
   s.summary     = 'Diaspora* Federation module'
   s.description = 'This gem provides the functionality for de-/serialization and '+
                   'de-/encryption of Entities in the protocols used for communication '+

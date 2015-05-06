@@ -161,3 +161,8 @@ A status code in the 3xx range indicates a redirect and a given URL in the
 `Location` header field should be followed.
 4xx and 5xx status codes are errors and the server implementation may choose to
 retry the request to the destination at a later time.
+
+## License
+
+This gem is published under the terms of the "MIT License".
+See the LICENSE file for the exact wording.
