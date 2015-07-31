@@ -1,5 +1,4 @@
-
-# diaspora* federation lib
+# diaspora* federation library
 
 [![Build Status](https://travis-ci.org/Raven24/diaspora-federation.png)](https://travis-ci.org/Raven24/diaspora-federation)
 [![Coverage Status](https://coveralls.io/repos/Raven24/diaspora-federation/badge.png)](https://coveralls.io/r/Raven24/diaspora-federation)
@@ -10,9 +9,9 @@
 
 The goal of this gem is to provide a library of reusable code for the purpose
 of implementing the protocols used around Diaspora. This covers user discovery
-utilizing the [XRD](http://docs.oasis-open.org/xri/xrd/v1.0/xrd-1.0.html),
-[HostMeta](http://tools.ietf.org/html/rfc6415),
-[WebFinger](http://tools.ietf.org/html/draft-jones-appsawg-webfinger) and
+utilizing the [XRD](https://docs.oasis-open.org/xri/xrd/v1.0/xrd-1.0.html),
+[HostMeta](https://tools.ietf.org/html/rfc6415),
+[WebFinger](https://tools.ietf.org/html/draft-jones-appsawg-webfinger) and
 [hCard](http://microformats.org/wiki/hCard "hCard 1.0") standards as well as
 the message passing implementation using a subset of the
 [Salmon protocol](http://www.salmon-protocol.org/).
@@ -23,7 +22,7 @@ HTTP routing and database infrastructure any way it sees fit, as long as the
 few required routes are handled to specification.
 
 
-### user discovery
+### User discovery
 
 When Diaspora attempts to discover a remote user account, the server name is
 extracted from the account handle: `"user@server.example" => "server.example"`
@@ -106,7 +105,7 @@ with this gem. You can find them in the {DiasporaFederation::WebFinger} module.
 See the included documentation for specifics on how to use them.
 
 
-### message passing
+### Message passing
 
 Messages are transmitted among Diaspora servers using the *push* principle.
 In almost all cases, user interactions cause federation messages to be created,
@@ -164,5 +163,5 @@ retry the request to the destination at a later time.
 
 ## License
 
-This gem is published under the terms of the "MIT License".
-See the LICENSE file for the exact wording.
+This gem is published under the terms of [the Expat License](https://www.gnu.org/licenses/license-list.html#Expat) also called "MIT License".
+See [the LICENSE file](LICENSE) for the exact wording.
