@@ -1,15 +1,18 @@
 require 'spec_helper'
 
 describe Entities::Like do
-  let(:data) { {positive: true,
-                guid: '0123456789abcdef',
-                target_type: 'Post',
-                parent_guid: 'fedcba9876543210',
-                parent_author_signature: 'BBBBBB==',
-                author_signature: 'AAAAAA==',
-                diaspora_handle: 'luke@diaspora.example.tld'} }
+  let(:data) do
+    { positive: true,
+      guid: '0123456789abcdef',
+      target_type: 'Post',
+      parent_guid: 'fedcba9876543210',
+      parent_author_signature: 'BBBBBB==',
+      author_signature: 'AAAAAA==',
+      diaspora_handle: 'luke@diaspora.example.tld' }
+  end
 
-  let(:xml) { <<-XML
+  let(:xml) do
+    <<-XML
 <like>
   <positive>true</positive>
   <guid>0123456789abcdef</guid>
@@ -20,9 +23,9 @@ describe Entities::Like do
   <diaspora_handle>luke@diaspora.example.tld</diaspora_handle>
 </like>
 XML
-  }
+  end
 
-  it_behaves_like "an Entity subclass" do
+  it_behaves_like 'an Entity subclass' do
     let(:klass) { Entities::Like }
   end
 end

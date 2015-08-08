@@ -7,14 +7,17 @@ describe Entities::Conversation do
 
   let(:msg1) { Entities::Message.new(Fabricate.attributes_for(:message)) }
   let(:msg2) { Entities::Message.new(Fabricate.attributes_for(:message)) }
-  let(:data) { {guid: Fabricate.sequence(:guid),
-                subject: 'very interesting conversation subject',
-                created_at: @datetime,
-                messages: [msg1, msg2],
-                diaspora_handle: Fabricate.sequence(:diaspora_handle),
-                participant_handles: "#{Fabricate.sequence(:diaspora_handle)};#{Fabricate.sequence(:diaspora_handle)}"} }
+  let(:data) do
+    { guid: Fabricate.sequence(:guid),
+      subject: 'very interesting conversation subject',
+      created_at: @datetime,
+      messages: [msg1, msg2],
+      diaspora_handle: Fabricate.sequence(:diaspora_handle),
+      participant_handles: "#{Fabricate.sequence(:diaspora_handle)};#{Fabricate.sequence(:diaspora_handle)}" }
+  end
 
-  let(:xml) { <<-XML
+  let(:xml) do
+    <<-XML
 <conversation>
   <guid>#{data[:guid]}</guid>
   <subject>#{data[:subject]}</subject>
@@ -43,9 +46,9 @@ describe Entities::Conversation do
   <participant_handles>#{data[:participant_handles]}</participant_handles>
 </conversation>
 XML
-  }
+  end
 
-  it_behaves_like "an Entity subclass" do
+  it_behaves_like 'an Entity subclass' do
     let(:klass) { Entities::Conversation }
   end
 end

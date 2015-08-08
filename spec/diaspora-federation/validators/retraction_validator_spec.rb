@@ -4,8 +4,8 @@ describe Validators::RetractionValidator do
   it 'validates a well-formed instance' do
     c = OpenStruct.new(Fabricate.attributes_for(:retraction))
     v = Validators::RetractionValidator.new(c)
-    v.should be_valid
-    v.errors.should be_empty
+    expect(v).to be_valid
+    expect(v.errors).to be_empty
   end
 
   it_behaves_like 'a guid validator' do
@@ -24,8 +24,8 @@ describe Validators::RetractionValidator do
     it 'must not be emtpy' do
       r = OpenStruct.new(Fabricate.attributes_for(:retraction, type: ''))
       v = Validators::RetractionValidator.new(r)
-      v.should_not be_valid
-      v.errors.should include(:type)
+      expect(v).to_not be_valid
+      expect(v.errors).to include(:type)
     end
   end
 end

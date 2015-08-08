@@ -10,7 +10,8 @@ describe WebFinger::WebFinger do
   let(:updates_url) { 'https://pod.example.tld/public/user.atom' }
   let(:pubkey) { 'AAAAAA==' }
 
-  let(:xml) { <<-XML
+  let(:xml) do
+    <<-XML
 <?xml version="1.0" encoding="UTF-8"?>
 <XRD xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0">
   <Subject>#{acct}</Subject>
@@ -23,9 +24,10 @@ describe WebFinger::WebFinger do
   <Link rel="diaspora-public-key" type="RSA" href="#{pubkey}"/>
 </XRD>
 XML
-  }
+  end
 
-  let(:historic_xml) { <<-XML
+  let(:historic_xml) do
+    <<-XML
 <?xml version="1.0" encoding="UTF-8"?>
 <XRD xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0">
   <Subject>#{acct}</Subject>
@@ -40,14 +42,15 @@ XML
   <Link rel="diaspora-public-key" type = 'RSA' href="#{pubkey}"/>
 </XRD>
 XML
-  }
+  end
 
-  let(:invalid_xml) { <<XML
+  let(:invalid_xml) do
+    <<XML
 <?xml version='1.0' encoding='UTF-8'?>
 <XRD xmlns='http://docs.oasis-open.org/ns/xri/xrd-1.0'>
 </XRD>
 XML
-  }
+  end
 
   it 'must not create blank instances' do
     expect { WebFinger::WebFinger.new }.to raise_error
@@ -55,7 +58,7 @@ XML
 
   context 'generation' do
     it 'creates a nice XML document' do
-      wf = WebFinger::WebFinger.from_account({
+      wf = WebFinger::WebFinger.from_account(
         acct_uri: acct,
         alias_url: alias_url,
         hcard_url: hcard_url,
@@ -64,18 +67,18 @@ XML
         updates_url: updates_url,
         guid: guid,
         pubkey: pubkey
-      })
-      wf.to_xml.should eql(xml)
+      )
+      expect(wf.to_xml).to eql(xml)
     end
 
     it 'fails if some params are missing' do
-      expect {
-        WebFinger::WebFinger.from_account({
+      expect do
+        WebFinger::WebFinger.from_account(
           acct_uri: acct,
           alias_url: alias_url,
           hcard_url: hcard_url
-        })
-      }.to raise_error(WebFinger::WebFinger::InvalidData)
+        )
+      end.to raise_error(WebFinger::WebFinger::InvalidData)
     end
 
     it 'fails if nothing was given' do
@@ -86,28 +89,28 @@ XML
   context 'parsing' do
     it 'reads its own output' do
       wf = WebFinger::WebFinger.from_xml(xml)
-      wf.acct_uri.should eql(acct)
-      wf.alias_url.should eql(alias_url)
-      wf.hcard_url.should eql(hcard_url)
-      wf.seed_url.should eql(seed_url)
-      wf.profile_url.should eql(profile_url)
-      wf.updates_url.should eql(updates_url)
+      expect(wf.acct_uri).to eql(acct)
+      expect(wf.alias_url).to eql(alias_url)
+      expect(wf.hcard_url).to eql(hcard_url)
+      expect(wf.seed_url).to eql(seed_url)
+      expect(wf.profile_url).to eql(profile_url)
+      expect(wf.updates_url).to eql(updates_url)
 
-      wf.guid.should eql(guid)
-      wf.pubkey.should eql(pubkey)
+      expect(wf.guid).to eql(guid)
+      expect(wf.pubkey).to eql(pubkey)
     end
 
     it 'reads old-style XML' do
       wf = WebFinger::WebFinger.from_xml(historic_xml)
-      wf.acct_uri.should eql(acct)
-      wf.alias_url.should eql(alias_url)
-      wf.hcard_url.should eql(hcard_url)
-      wf.seed_url.should eql(seed_url)
-      wf.profile_url.should eql(profile_url)
-      wf.updates_url.should eql(updates_url)
+      expect(wf.acct_uri).to eql(acct)
+      expect(wf.alias_url).to eql(alias_url)
+      expect(wf.hcard_url).to eql(hcard_url)
+      expect(wf.seed_url).to eql(seed_url)
+      expect(wf.profile_url).to eql(profile_url)
+      expect(wf.updates_url).to eql(updates_url)
 
-      wf.guid.should eql(guid)
-      wf.pubkey.should eql(pubkey)
+      expect(wf.guid).to eql(guid)
+      expect(wf.pubkey).to eql(pubkey)
     end
 
     it 'fails if the document is empty' do

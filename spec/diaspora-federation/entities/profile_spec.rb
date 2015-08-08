@@ -3,7 +3,8 @@ require 'spec_helper'
 describe Entities::Profile do
   let(:data) { Fabricate.attributes_for(:profile) }
 
-  let(:xml) { <<-XML
+  let(:xml) do
+    <<-XML
 <profile>
   <diaspora_handle>#{data[:diaspora_handle]}</diaspora_handle>
   <first_name>#{data[:first_name]}</first_name>
@@ -20,9 +21,9 @@ describe Entities::Profile do
   <tag_string>#{data[:tag_string]}</tag_string>
 </profile>
 XML
-  }
+  end
 
-  it_behaves_like "an Entity subclass" do
+  it_behaves_like 'an Entity subclass' do
     let(:klass) { Entities::Profile }
   end
 end

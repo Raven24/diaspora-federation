@@ -1,5 +1,4 @@
 module DiasporaFederation
-
   # +XmlPayload+ provides methods to wrap a XML-serialized {Entity} inside a
   # common XML structure that will become the payload for federation messages.
   #
@@ -12,7 +11,6 @@ module DiasporaFederation
   #
   # (The +post+ element is there for historic reasons...)
   class XmlPayload
-
     # Encapsulates an Entity inside the wrapping xml structure
     # and returns the XML Object.
     #
@@ -22,7 +20,7 @@ module DiasporaFederation
     # @return [Nokogiri::XML::Element] XML root node
     # @raise [ArgumentError] if the argument is not an Entity subclass
     def self.pack(entity)
-      raise ArgumentError unless entity.is_a?(Entity)
+      fail ArgumentError unless entity.is_a?(Entity)
 
       entity_xml = entity.to_xml
       doc = entity_xml.document
@@ -47,12 +45,12 @@ module DiasporaFederation
     # @raise [UnknownEntity] if the class for the entity contained inside the
     #   XML can't be found
     def self.unpack(xml)
-      raise ArgumentError unless xml.instance_of?(Nokogiri::XML::Element)
-      raise InvalidStructure unless wrap_valid?(xml)
+      fail ArgumentError unless xml.instance_of?(Nokogiri::XML::Element)
+      fail InvalidStructure unless wrap_valid?(xml)
 
       data = xml.at_xpath('post/*[1]')
       klass_name = entity_class(data.name)
-      raise UnknownEntity unless Entities.const_defined?(klass_name)
+      fail UnknownEntity unless Entities.const_defined?(klass_name)
 
       klass = Entities.const_get(klass_name)
       populate_entity(klass, data)
@@ -77,7 +75,7 @@ module DiasporaFederation
     def self.entity_class(term)
       string = term.to_s
       string = string.sub(/^[a-z\d]*/) { $&.capitalize }
-      string.gsub(/(?:_|(\/))([a-z\d]*)/i) { $2.capitalize }.gsub('/', '::')
+      string.gsub(/(?:_|(\/))([a-z\d]*)/i) { Regexp.last_match[2].capitalize }.gsub('/', '::')
     end
     private_class_method :entity_class
 

@@ -28,7 +28,9 @@ Fabricator(:conversation) do
   created_at { DateTime.now }
   messages []
   diaspora_handle { Fabricate.sequence(:diaspora_handle) }
-  participant_handles { 3.times.map{ Fabricate.sequence(:diaspora_handle) }.join(';') }
+  participant_handles do
+    3.times.map { Fabricate.sequence(:diaspora_handle) }.join(';')
+  end
 end
 
 Fabricator(:like) do
@@ -71,11 +73,11 @@ Fabricator(:person) do
   guid { Fabricate.sequence(:guid) }
   diaspora_handle { Fabricate.sequence(:diaspora_handle) }
   url 'https://pod.example.tld/'
-  exported_key {
-    '-----BEGIN RSA PUBLIC KEY-----' + "\n" +
-    Fabricate.sequence(:signature)   + "\n" +
-    '-----END RSA PUBLIC KEY-----'   + "\n"
-  }
+  exported_key do
+    "-----BEGIN RSA PUBLIC KEY-----\n" +
+      Fabricate.sequence(:signature) + "\n" \
+      "-----END RSA PUBLIC KEY-----\n"
+  end
 end
 
 Fabricator(:profile) do

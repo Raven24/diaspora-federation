@@ -13,7 +13,8 @@ describe WebFinger::HCard do
   let(:key) { 'ABCDEF==' }
   let(:searchable) { true }
 
-  let(:html) { <<-HTML
+  let(:html) do
+    <<-HTML
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
@@ -97,9 +98,10 @@ describe WebFinger::HCard do
   </body>
 </html>
 HTML
-  }
+  end
 
-  let(:historic_html) { <<-HTML
+  let(:historic_html) do
+    <<-HTML
 <div id='content'>
 <h1>#{name}</h1>
 <div id='content_inner'>
@@ -163,18 +165,19 @@ HTML
 </div>
 </div>
 HTML
-  }
+  end
 
-  let(:invalid_html) { <<-HTML
+  let(:invalid_html) do
+    <<-HTML
 <div id="content">
   <span class='fn'>#{name}</span>
 </div>
 HTML
-  }
+  end
 
   context 'generation' do
     it 'creates an instance from a data hash' do
-      hc = WebFinger::HCard.from_account({
+      hc = WebFinger::HCard.from_account(
         guid: guid,
         diaspora_handle: handle,
         full_name: name,
@@ -186,17 +189,17 @@ HTML
         searchable: searchable,
         first_name: first_name,
         last_name: last_name
-      })
-      hc.to_html.should eql(html)
+      )
+      expect(hc.to_html).to eql(html)
     end
 
     it 'fails if some params are missing' do
-      expect {
-        WebFinger::HCard.from_account({
+      expect do
+        WebFinger::HCard.from_account(
           guid: guid,
           diaspora_handle: handle
-        })
-      }.to raise_error(WebFinger::HCard::InvalidData)
+        )
+      end.to raise_error(WebFinger::HCard::InvalidData)
     end
 
     it 'fails if nothing was given' do
@@ -207,30 +210,30 @@ HTML
   context 'parsing' do
     it 'reads its own output' do
       hc = WebFinger::HCard.from_html(html)
-      hc.guid.should eql(guid)
-      hc.nickname.should eql(handle.split('@').first)
-      hc.full_name.should eql(name)
-      hc.url.should eql(url)
-      hc.photo_full_url.should eql(photo_url)
-      hc.photo_medium_url.should eql(photo_url_m)
-      hc.photo_small_url.should eql(photo_url_s)
-      hc.pubkey.should eql(key)
-      hc.searchable.should eql(searchable.to_s)
+      expect(hc.guid).to eql(guid)
+      expect(hc.nickname).to eql(handle.split('@').first)
+      expect(hc.full_name).to eql(name)
+      expect(hc.url).to eql(url)
+      expect(hc.photo_full_url).to eql(photo_url)
+      expect(hc.photo_medium_url).to eql(photo_url_m)
+      expect(hc.photo_small_url).to eql(photo_url_s)
+      expect(hc.pubkey).to eql(key)
+      expect(hc.searchable).to eql(searchable.to_s)
 
-      hc.first_name.should eql(first_name)
-      hc.last_name.should eql(last_name)
+      expect(hc.first_name).to eql(first_name)
+      expect(hc.last_name).to eql(last_name)
     end
 
     it 'reads old-style HTML' do
       hc = WebFinger::HCard.from_html(historic_html)
-      hc.url.should eql(url)
-      hc.photo_full_url.should eql(photo_url)
-      hc.photo_medium_url.should eql(photo_url_m)
-      hc.photo_small_url.should eql(photo_url_s)
-      hc.searchable.should eql(searchable.to_s)
+      expect(hc.url).to eql(url)
+      expect(hc.photo_full_url).to eql(photo_url)
+      expect(hc.photo_medium_url).to eql(photo_url_m)
+      expect(hc.photo_small_url).to eql(photo_url_s)
+      expect(hc.searchable).to eql(searchable.to_s)
 
-      hc.first_name.should eql(first_name)
-      hc.last_name.should eql(last_name)
+      expect(hc.first_name).to eql(first_name)
+      expect(hc.last_name).to eql(last_name)
     end
 
     it 'fails if the document is incomplete' do

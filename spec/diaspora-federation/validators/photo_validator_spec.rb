@@ -4,8 +4,8 @@ describe Validators::PhotoValidator do
   it 'validates a well-formed instance' do
     c = OpenStruct.new(Fabricate.attributes_for(:photo))
     v = Validators::PhotoValidator.new(c)
-    v.should be_valid
-    v.errors.should be_empty
+    expect(v).to be_valid
+    expect(v.errors).to be_empty
   end
 
   it_behaves_like 'a diaspora_handle validator' do
@@ -34,11 +34,11 @@ describe Validators::PhotoValidator do
     [:remote_photo_name, :remote_photo_path].each do |prop|
       it 'must not be empty' do
         p = OpenStruct.new(Fabricate.attributes_for(:photo))
-        p.public_send("#{prop.to_s}=", '')
+        p.public_send("#{prop}=", '')
 
         v = Validators::PhotoValidator.new(p)
-        v.should_not be_valid
-        v.errors.should include(prop)
+        expect(v).to_not be_valid
+        expect(v.errors).to include(prop)
       end
     end
   end
@@ -48,22 +48,22 @@ describe Validators::PhotoValidator do
       it 'validates an integer' do
         [123, '123'].each do |val|
           p = OpenStruct.new(Fabricate.attributes_for(:photo))
-          p.public_send("#{prop.to_s}=", val)
+          p.public_send("#{prop}=", val)
 
           v = Validators::PhotoValidator.new(p)
-          v.should be_valid
-          v.errors.should be_empty
+          expect(v).to be_valid
+          expect(v.errors).to be_empty
         end
       end
 
       it 'fails for non numeric types' do
         [true, :num, 'asdf'].each do |val|
           p = OpenStruct.new(Fabricate.attributes_for(:photo))
-          p.public_send("#{prop.to_s}=", val)
+          p.public_send("#{prop}=", val)
 
           v = Validators::PhotoValidator.new(p)
-          v.should_not be_valid
-          v.errors.should include(prop)
+          expect(v).to_not be_valid
+          expect(v.errors).to include(prop)
         end
       end
     end

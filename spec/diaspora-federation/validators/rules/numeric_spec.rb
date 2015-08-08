@@ -1,12 +1,11 @@
 require 'spec_helper'
 
 describe Validation::Rule::Numeric do
-
   it 'will not accept parameters' do
     v = Validation::Validator.new({})
-    expect {
+    expect do
       v.rule(:number, numeric: { param: true })
-    }.to raise_error
+    end.to raise_error
   end
 
   context 'validation' do
@@ -14,24 +13,24 @@ describe Validation::Rule::Numeric do
       v = Validation::Validator.new(OpenStruct.new(number: '123.34'))
       v.rule(:number, :numeric)
 
-      v.should be_valid
-      v.errors.should be_empty
+      expect(v).to be_valid
+      expect(v.errors).to be_empty
     end
 
     it 'validates an integer' do
       v = Validation::Validator.new(OpenStruct.new(number: '123'))
       v.rule(:number, :numeric)
 
-      v.should be_valid
-      v.errors.should be_empty
+      expect(v).to be_valid
+      expect(v.errors).to be_empty
     end
 
     it 'validates negative numbers' do
       v = Validation::Validator.new(OpenStruct.new(number: '-987'))
       v.rule(:number, :numeric)
 
-      v.should be_valid
-      v.errors.should be_empty
+      expect(v).to be_valid
+      expect(v.errors).to be_empty
     end
   end
 
@@ -39,7 +38,7 @@ describe Validation::Rule::Numeric do
     v = Validation::Validator.new(OpenStruct.new(number: 'asdf qwer'))
     v.rule(:number, :numeric)
 
-    v.should_not be_valid
-    v.errors.should include(:number)
+    expect(v).to_not be_valid
+    expect(v.errors).to include(:number)
   end
 end

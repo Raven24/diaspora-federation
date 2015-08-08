@@ -9,8 +9,8 @@ Gem::Specification.new do |s|
   s.date        = '2013-06-28'
   s.license     = 'MIT'
   s.summary     = 'Diaspora* Federation module'
-  s.description = 'This gem provides the functionality for de-/serialization and '+
-                  'de-/encryption of Entities in the protocols used for communication '+
+  s.description = 'This gem provides the functionality for de-/serialization and '\
+                  'de-/encryption of Entities in the protocols used for communication '\
                   'among the various installations of Diaspora*'
   s.authors     = ['Florian Staudacher']
   s.email       = 'florian_staudacher@yahoo.de'
@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
 
   s.required_ruby_version = '>= 1.9.3'
 
-  s.require_paths = ["lib"]
+  s.require_paths = ['lib']
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- spec/*`.split("\n")
 

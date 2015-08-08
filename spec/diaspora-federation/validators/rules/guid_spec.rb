@@ -3,9 +3,9 @@ require 'spec_helper'
 describe Validation::Rule::Guid do
   it 'will not accept parameters' do
     v = Validation::Validator.new({})
-    expect {
+    expect do
       v.rule(:guid, guid: { param: true })
-    }.to raise_error
+    end.to raise_error
   end
 
   context 'validation' do
@@ -13,8 +13,8 @@ describe Validation::Rule::Guid do
       v = Validation::Validator.new(OpenStruct.new(guid: 'abcdef0123456789'))
       v.rule(:guid, :guid)
 
-      v.should be_valid
-      v.errors.should be_empty
+      expect(v).to be_valid
+      expect(v.errors).to be_empty
     end
   end
 
@@ -22,23 +22,23 @@ describe Validation::Rule::Guid do
     v = Validation::Validator.new(OpenStruct.new(guid: '012345'))
     v.rule(:guid, :guid)
 
-    v.should_not be_valid
-    v.errors.should include(:guid)
+    expect(v).to_not be_valid
+    expect(v.errors).to include(:guid)
   end
 
   it 'fails if the string contains invalid chars' do
     v = Validation::Validator.new(OpenStruct.new(guid: 'ghijklmnopqrstuvwxyz++'))
     v.rule(:guid, :guid)
 
-    v.should_not be_valid
-    v.errors.should include(:guid)
+    expect(v).to_not be_valid
+    expect(v.errors).to include(:guid)
   end
 
   it 'fails if the string is empty' do
     v = Validation::Validator.new(OpenStruct.new(guid: ''))
     v.rule(:guid, :guid)
 
-    v.should_not be_valid
-    v.errors.should include(:guid)
+    expect(v).to_not be_valid
+    expect(v.errors).to include(:guid)
   end
 end

@@ -11,7 +11,7 @@ describe Salmon::MagicEnvelope do
     enc = env.at_xpath('me:encoding').content
     alg = env.at_xpath('me:alg').content
 
-    subj = [data, type, enc, alg].map { |i| Base64.urlsafe_encode64(i) }.join('.')
+    [data, type, enc, alg].map { |i| Base64.urlsafe_encode64(i) }.join('.')
   end
 
   def re_sign(env, key)
@@ -27,9 +27,9 @@ describe Salmon::MagicEnvelope do
 
     it 'raises an error if the param types are wrong' do
       ['asdf', 1234, :test, false].each do |val|
-        expect {
+        expect do
           Salmon::MagicEnvelope.new(val, val)
-        }.to raise_error
+        end.to raise_error
       end
     end
   end
@@ -37,19 +37,19 @@ describe Salmon::MagicEnvelope do
   context '#envelop' do
     subject { Salmon::MagicEnvelope.new(pkey, payload) }
 
-    its(:envelop) { should be_an_instance_of Nokogiri::XML::Element }
+    it { expect(subject.envelop).to be_an_instance_of Nokogiri::XML::Element }
 
     it 'returns a magic envelope of correct structure' do
       env = subject.envelop
-      env.name.should eql('env')
+      expect(env.name).to eql('env')
 
-      control = ['data', 'encoding', 'alg', 'sig']
+      control = %w(data encoding alg sig)
       env.children.each do |node|
-        control.should include(node.name)
+        expect(control).to include(node.name)
         control.reject! { |i| i == node.name }
       end
 
-      control.should be_empty
+      expect(control).to be_empty
     end
 
     it 'signs the payload correctly' do
@@ -58,7 +58,7 @@ describe Salmon::MagicEnvelope do
       subj = sig_subj(env)
       sig = Base64.urlsafe_decode64(env.at_xpath('me:sig').content)
 
-      pkey.public_key.verify(OpenSSL::Digest::SHA256.new, sig, subj).should be_true
+      expect(pkey.public_key.verify(OpenSSL::Digest::SHA256.new, sig, subj)).to eq(true)
     end
   end
 
@@ -67,10 +67,10 @@ describe Salmon::MagicEnvelope do
 
     it 'encrypts the payload, returning cipher params' do
       params = {}
-      expect {
+      expect do
         params = subject.encrypt!
-      }.not_to raise_error
-      params.should include(:key, :iv)
+      end.not_to raise_error
+      expect(params).to include(:key, :iv)
     end
 
     it 'actually encrypts the payload' do
@@ -85,37 +85,37 @@ describe Salmon::MagicEnvelope do
 
       ciphertext = cipher.update(plain_payload) + cipher.final
 
-      Base64.strict_encode64(ciphertext).should eql(encrypted_payload)
+      expect(Base64.strict_encode64(ciphertext)).to eql(encrypted_payload)
     end
   end
 
   context '::unenvelop' do
     context 'sanity' do
       it 'works with sane input' do
-        expect {
+        expect do
           Salmon::MagicEnvelope.unenvelop(envelope, pkey.public_key)
-        }.not_to raise_error
+        end.not_to raise_error
       end
 
       it 'raises an error if the param types are wrong' do
         ['asdf', 1234, :test, false].each do |val|
-          expect {
+          expect do
             Salmon::MagicEnvelope.unenvelop(val, val)
-          }.to raise_error
+          end.to raise_error
         end
       end
 
       it 'verifies the envelope structure' do
-        expect {
+        expect do
           Salmon::MagicEnvelope.unenvelop(Nokogiri::XML::Document.parse('<asdf/>').root, pkey.public_key)
-        }.to raise_error Salmon::MagicEnvelope::InvalidEnvelope
+        end.to raise_error Salmon::MagicEnvelope::InvalidEnvelope
       end
 
       it 'verifies the signature' do
         other_key = OpenSSL::PKey::RSA.generate(512)
-        expect {
+        expect do
           Salmon::MagicEnvelope.unenvelop(envelope, other_key.public_key)
-        }.to raise_error Salmon::MagicEnvelope::InvalidSignature
+        end.to raise_error Salmon::MagicEnvelope::InvalidSignature
       end
 
       it 'verifies the encoding' do
@@ -123,9 +123,9 @@ describe Salmon::MagicEnvelope do
         elem = bad_env.at_xpath('me:encoding')
         elem.content = 'invalid_enc'
         re_sign(bad_env, pkey)
-        expect {
-          e = Salmon::MagicEnvelope.unenvelop(bad_env, pkey.public_key)
-        }.to raise_error Salmon::MagicEnvelope::InvalidEncoding
+        expect do
+          Salmon::MagicEnvelope.unenvelop(bad_env, pkey.public_key)
+        end.to raise_error Salmon::MagicEnvelope::InvalidEncoding
       end
 
       it 'verifies the algorithm' do
@@ -133,16 +133,16 @@ describe Salmon::MagicEnvelope do
         elem = bad_env.at_xpath('me:alg')
         elem.content = 'invalid_alg'
         re_sign(bad_env, pkey)
-        expect {
-          e = Salmon::MagicEnvelope.unenvelop(bad_env, pkey.public_key)
-        }.to raise_error Salmon::MagicEnvelope::InvalidAlgorithm
+        expect do
+          Salmon::MagicEnvelope.unenvelop(bad_env, pkey.public_key)
+        end.to raise_error Salmon::MagicEnvelope::InvalidAlgorithm
       end
     end
 
     it 'returns the original entity' do
       e = Salmon::MagicEnvelope.unenvelop(envelope, pkey.public_key)
-      e.should be_an_instance_of Entities::TestEntity
-      e.test.should eql('asdf')
+      expect(e).to be_an_instance_of Entities::TestEntity
+      expect(e.test).to eql('asdf')
     end
 
     it 'decrypts on the fly, when cipher params are present' do
@@ -152,8 +152,8 @@ describe Salmon::MagicEnvelope do
       envelope = env.envelop
 
       e = Salmon::MagicEnvelope.unenvelop(envelope, pkey.public_key, params)
-      e.should be_an_instance_of Entities::TestEntity
-      e.test.should eql('asdf')
+      expect(e).to be_an_instance_of Entities::TestEntity
+      expect(e.test).to eql('asdf')
     end
   end
 end

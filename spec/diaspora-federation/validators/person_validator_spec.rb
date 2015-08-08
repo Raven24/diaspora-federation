@@ -4,8 +4,8 @@ describe Validators::PersonValidator do
   it 'validates a well-formed instance' do
     c = OpenStruct.new(Fabricate.attributes_for(:person))
     v = Validators::PersonValidator.new(c)
-    v.should be_valid
-    v.errors.should be_empty
+    expect(v).to be_valid
+    expect(v.errors).to be_empty
   end
 
   it_behaves_like 'a diaspora_handle validator' do
@@ -24,15 +24,15 @@ describe Validators::PersonValidator do
     it 'fails for malformed rsa key' do
       c = OpenStruct.new(Fabricate.attributes_for(:person, exported_key: 'ASDF'))
       v = Validators::PersonValidator.new(c)
-      v.should_not be_valid
-      v.errors.should include(:exported_key)
+      expect(v).to_not be_valid
+      expect(v.errors).to include(:exported_key)
     end
 
     it 'must not be empty' do
       c = OpenStruct.new(Fabricate.attributes_for(:person, exported_key: ''))
       v = Validators::PersonValidator.new(c)
-      v.should_not be_valid
-      v.errors.should include(:exported_key)
+      expect(v).to_not be_valid
+      expect(v.errors).to include(:exported_key)
     end
   end
 end

@@ -4,8 +4,8 @@ describe Validators::RequestValidator do
   it 'validates a well-formed instance' do
     c = OpenStruct.new(Fabricate.attributes_for(:request))
     v = Validators::RequestValidator.new(c)
-    v.should be_valid
-    v.errors.should be_empty
+    expect(v).to be_valid
+    expect(v.errors).to be_empty
   end
 
   context '#sender_handle, #recipient_handle' do
